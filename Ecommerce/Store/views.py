@@ -21,33 +21,54 @@ def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     return render(request, 'Store/product_detail.html', {'product': product})
 
-# View to add an item to the cart
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
+
+    # Get quantity from request, default to 1 if not provided
+    quantity = int(request.GET.get('quantity', 1))
+
+    # Get or create the CartItem
     cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
 
     if not item_created:
-        cart_item.quantity += 1
+        # If the item already exists, update its quantity
+        cart_item.quantity += quantity
         cart_item.save()
 
+    # Recalculate the total price of the cart
     cart.calculate_total()
-    return redirect('cart_view')
+
+    return redirect('Store/cart_view')
+
 
 # View to remove an item from the cart
 @login_required
 def remove_from_cart(request, cart_item_id):
     cart_item = get_object_or_404(CartItem, id=cart_item_id)
-    cart_item.delete()
+
+    if cart_item.quantity > 1:
+        # If quantity is more than 1, just decrease it
+        cart_item.quantity -= 1
+        cart_item.save()
+    else:
+        # If quantity is 1, delete the cart item
+        cart_item.delete()
+
+    # Recalculate the total price of the cart
     cart_item.cart.calculate_total()
-    return redirect('cart_view')
+
+    return redirect('Store/cart_view')
+
 
 # View to display the cart
 @login_required
 def cart_view(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    return render(request, 'cart.html', {'cart': cart})
+    cart.calculate_total()  # Make sure total is recalculated before passing to template
+    return render(request, 'Store/cart.html', {'cart': cart})
+
 
 # View to place an order
 @login_required
@@ -60,10 +81,10 @@ def place_order(request):
         cart.calculate_total()
         return redirect('order_confirmation', order_id=order.id)
 
-    return render(request, 'checkout.html', {'cart': cart})
+    return render(request, 'Store/checkout.html', {'cart': cart})
 
 # View to confirm the order
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'order_confirmation.html', {'order': order})
+    return render(request, 'Store/qorder_confirmation.html', {'order': order})
