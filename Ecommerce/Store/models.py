@@ -14,7 +14,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='products/')
     # category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, default='Default Category')
 
     def __str__(self):
         return self.name
@@ -28,11 +28,14 @@ class Cart(models.Model):
 
     def calculate_total(self):
         """Recalculate the total price based on the cart items."""
-        self.total_price = sum(item.subtotal() for item in self.items.all())
+        self.total_price = sum(item.quantity * item.product.price for item in self.items.all())
         self.save()
 
     def __str__(self):
         return f"Cart for {self.user.username}"
+
+
+
 
     def add_item(self, product, quantity=1):
         """Add an item to the cart or update the quantity if already exists."""
@@ -52,23 +55,30 @@ class Cart(models.Model):
         cart_item.save()
         self.calculate_total()
 
-    def remove_item(self, product):
+
+
+
+    def remove_item(self, product,quantity=1):
         """Remove an item from the cart."""
-        try:
-            cart_item = CartItem.objects.get(cart=self, product=product)
-            if cart_item.quantity > 1:
-                cart_item.quantity -= 1
-                cart_item.save()
-            else:
-                cart_item.delete()
-            # Recalculate the total price after removal
-            self.calculate_total()
-        except CartItem.DoesNotExist:
-            pass
+        # get the CartItem
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=self,
+            product=product
+        )
+        
+        # If the item already exists, just update the quantity
+        if not created:
+            cart_item.quantity -= quantity
+        else:
+            cart_item.quantity = quantity
+        
+        # Save the updated CartItem and calculate total
+        cart_item.save()
+        self.calculate_total()
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 

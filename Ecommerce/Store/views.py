@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import Product, Cart, CartItem, Order
 from django.contrib.auth.decorators import login_required
 
@@ -21,70 +21,97 @@ def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     return render(request, 'Store/product_detail.html', {'product': product})
 
+
+
+# View to add an item to the cart
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
+    # Get or create the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
 
-    # Get quantity from request, default to 1 if not provided
-    quantity = int(request.GET.get('quantity', 1))
+    # Add the item to the cart
+    cart.add_item(product)
 
-    # Get or create the CartItem
-    cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+    # Get updated cart items
+    cart_items = cart.items.all()
 
-    if not item_created:
-        # If the item already exists, update its quantity
-        cart_item.quantity += quantity
-        cart_item.save()
+    # Calculate the total quantity of items in the cart
+    total_item_count = sum(item.quantity for item in cart_items)
 
-    # Recalculate the total price of the cart
-    cart.calculate_total()
+    # Return the updated cart as JSON for frontend update
+    return JsonResponse({
+        'cart_item_count': total_item_count,
+        'total_price': cart.total_price,
+    })
 
-    return redirect('Store/cart_view')
 
-
-# View to remove an item from the cart
 @login_required
-def remove_from_cart(request, cart_item_id):
-    cart_item = get_object_or_404(CartItem, id=cart_item_id)
+def remove_from_cart(request, product_id):
+    # Get the product to remove
+    product = get_object_or_404(Product, id=product_id)
 
-    if cart_item.quantity > 1:
-        # If quantity is more than 1, just decrease it
-        cart_item.quantity -= 1
-        cart_item.save()
-    else:
-        # If quantity is 1, delete the cart item
-        cart_item.delete()
+    # Get the user's cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
 
-    # Recalculate the total price of the cart
-    cart_item.cart.calculate_total()
+    # remove the item from the cart
+    cart.remove_item(product)
 
-    return redirect('Store/cart_view')
+    # Get updated cart items
+    cart_items = cart.items.all()
 
+    # Calculate the total quantity of items in the cart
+    total_item_count = sum(item.quantity for item in cart_items)
+
+    # Return the updated total item count and total price
+    return JsonResponse({
+        'cart_item_count': total_item_count,
+        'total_price': cart.total_price,
+    })
+   
 
 # View to display the cart
 @login_required
 def cart_view(request):
+    # Get the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
-    cart.calculate_total()  # Make sure total is recalculated before passing to template
-    return render(request, 'Store/cart.html', {'cart': cart})
+    
+    # Pass the cart items and total price to the template
+    return render(request, 'store/cart_view.html', {
+        'cart': cart,
+        'cart_items': cart.items.all(),
+    })
+
+
 
 
 # View to place an order
 @login_required
 def place_order(request):
     cart = get_object_or_404(Cart, user=request.user)
+
     if request.method == 'POST':
-        shipping_address = request.POST['shipping_address']
+        shipping_address = request.POST.get('shipping_address', '')
+
+        if not shipping_address:
+            return JsonResponse({'success': False, 'message': 'Shipping address is required.'})
+
         order = Order.objects.create(user=request.user, cart=cart, shipping_address=shipping_address)
-        cart.items.all().delete()  # Empty the cart after the order is placed
+
+        # Empty the cart and recalculate total
+        cart.items.all().delete()
         cart.calculate_total()
+
         return redirect('order_confirmation', order_id=order.id)
 
-    return render(request, 'Store/checkout.html', {'cart': cart})
+    return render(request, 'store/checkout.html', {'cart': cart})
 
 # View to confirm the order
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'Store/qorder_confirmation.html', {'order': order})
+    return render(request, 'Store/order_confirmation.html', {'order': order})
+
+def contact_view(request):
+    return render(request, 'Store/contact.html')

@@ -1,105 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product List</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .card {
-            height: 500px;  /* Fixed height for consistent card size */
-            display: flex;
-            flex-direction: column;
-            margin: 15px 0;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card-img-top {
-            width: 100%;
-            height: 250px;  /* Set fixed height */
-            object-fit: cover;  /* Ensures images maintain their aspect ratio and cover the area */
-        }
-        .card-body {
-            flex-grow: 1;  /* Makes sure the content takes up remaining space */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;  /* Ensures the content is evenly spaced */
-        }
-        .card-body .btn {
-            margin-top: 10px;  /* Adds space between the buttons */
-        }
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        .navbar-brand {
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 50px;
-            background-color: #343a40;
-            color: white;
-            padding: 20px 0;
-            text-align: center;
-        }
+      body {
+        background-color: #f8f9fa;
+      }
+
+      .card {
+        height: 500px; /* Fixed height for consistent card size */
+        display: flex;
+        flex-direction: column;
+        margin: 15px 0;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card-img-top {
+        width: 100%;
+        height: 250px; /* Set fixed height */
+        object-fit: cover; /* Ensures images maintain their aspect ratio and cover the area */
+      }
+
+      .card-body {
+        flex-grow: 1; /* Makes sure the content takes up remaining space */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly; /* Ensures the content is evenly spaced */
+      }
+
+      .card-body .btn {
+        margin-top: 10px; /* Adds space between the buttons */
+      }
+
+      .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .navbar-brand {
+        font-weight: bold;
+      }
+
+      .footer {
+        margin-top: 50px;
+        background-color: #343a40;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">My E-Commerce</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Cart</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">My E-Commerce</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="{% url 'product_list' %}"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'cart_view' %}" id="cart-link">Cart (0)</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <!-- Main Content -->
-<div class="container mt-4">
-    <h1 class="text-center">Our Products</h1>
-    <div class="row">
+    <div class="container mt-4">
+      <h1 class="text-center">Our Products</h1>
+      <div class="row">
         {% for product in products %}
-        <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">  <!-- Adjusted for 4 items per row on large screens -->
-            <div class="card">
-                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">₹{{ product.price }}</p>
-                    <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">View Details</a>
-                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
-                </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
+          <div class="card">
+            <img
+              src="{{ product.image.url }}"
+              class="card-img-top"
+              alt="{{ product.name }}"
+            />
+            <div class="card-body text-center">
+              <h5 class="card-title">{{ product.name }}</h5>
+              <p class="card-text">₹{{ product.price }}</p>
+              <a
+                href="{% url 'product_detail' product.id %}"
+                class="btn btn-primary mt-2"
+                >View Details
+              </a>
+              <button
+                class="btn btn-success btn-custom add_to_cart"
+                data-product-id="{{ product.id }}"
+              >
+                Add to Cart
+              </button>
             </div>
+          </div>
         </div>
         {% endfor %}
+      </div>
     </div>
-</div>
 
     <!-- Footer -->
     <div class="footer">
-        <p>&copy; 2024 My E-Commerce. All rights reserved.</p>
+      <p>&copy; 2024 My E-Commerce. All rights reserved.</p>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+
+    <!-- jQuery (necessary for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).on("click", ".add_to_cart", function () {
+          const productId = $(this).data("product-id"); // Fetch product ID
+          const addToCartUrl = '/add_to_cart/' + productId + '/'; // Ensure the URL matches Django routing
+      
+          $.ajax({
+            url: addToCartUrl,
+            method: "GET",
+            success: function (response) {
+              console.log("Response:", response); // Log for debugging
+              // Update the cart count in the navbar without the pop-up
+              $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+            },
+            error: function (xhr, status, error) {
+              console.error("Error:", xhr.responseText); // Log detailed error
+              alert("An error occurred. Please try again.");
+            },
+          });
+        });
+      </script>
+  </body>
 </html>
