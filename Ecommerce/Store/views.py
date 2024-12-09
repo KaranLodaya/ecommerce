@@ -49,25 +49,31 @@ def add_to_cart(request, product_id):
 
 @login_required
 def remove_from_cart(request, product_id):
-    # Get the product to remove
+    cart = get_object_or_404(Cart, user=request.user)
     product = get_object_or_404(Product, id=product_id)
 
-    # Get the user's cart
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    # Find the cart item
+    cart_item = cart.items.filter(product=product).first()
 
-    # remove the item from the cart
-    cart.remove_item(product)
+    if cart_item:
+        # Decrement quantity or remove the item if it reaches 0
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+            updated_quantity = cart_item.quantity
+        else:
+            cart_item.delete()
+            updated_quantity = 0  # Set quantity to 0 since item is deleted
 
-    # Get updated cart items
-    cart_items = cart.items.all()
+    # Calculate updated cart details
+    total_price = sum(item.product.price * item.quantity for item in cart.items.all())
+    cart_item_count = cart.items.count()
 
-    # Calculate the total quantity of items in the cart
-    total_item_count = sum(item.quantity for item in cart_items)
-
-    # Return the updated total item count and total price
+    # Return updated response
     return JsonResponse({
-        'cart_item_count': total_item_count,
-        'total_price': cart.total_price,
+        "updated_quantity": updated_quantity,
+        "total_price": total_price,
+        "cart_item_count": cart_item_count,
     })
    
 
@@ -76,11 +82,18 @@ def remove_from_cart(request, product_id):
 def cart_view(request):
     # Get the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
+
+     # Get updated cart items
+    cart_items = cart.items.all()
+
+    # Calculate the total quantity of items in the cart
+    total_item_count = sum(item.quantity for item in cart_items)
     
     # Pass the cart items and total price to the template
     return render(request, 'store/cart_view.html', {
         'cart': cart,
         'cart_items': cart.items.all(),
+        'cart_item_count': total_item_count,
     })
 
 
