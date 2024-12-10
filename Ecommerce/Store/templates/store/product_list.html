@@ -15,28 +15,91 @@
       }
 
       .card {
-        height: 500px; /* Fixed height for consistent card size */
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
+        height: 100%; /* Ensure the card fills its parent container */
         margin: 15px 0;
+        padding: 20px;
+        background: #323232;
+        border-radius: 20px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
 
-      .card-img-top {
-        width: 100%;
-        height: 250px; /* Set fixed height */
-        object-fit: cover; /* Ensures images maintain their aspect ratio and cover the area */
-      }
-
-      .card-body {
-        flex-grow: 1; /* Makes sure the content takes up remaining space */
+      .card__wrapper {
         display: flex;
-        flex-direction: column;
-        justify-content: space-evenly; /* Ensures the content is evenly spaced */
+        justify-content: space-between;
+        align-items: center;
       }
 
-      .card-body .btn {
-        margin-top: 10px; /* Adds space between the buttons */
+      .card__img {
+        width: 250px; /* Adjust to your desired size */
+        height: 250px; /* Same as width for a square aspect ratio */
+        border-radius: 50%; /* Makes the image circular */
+        overflow: hidden; /* Ensures any overflow is hidden */
+        display: flex;
+        justify-content: center; /* Centers the image horizontally */
+        align-items: center; /* Centers the image vertically */
+        margin: 0 auto; /* Ensures the card stays centered within its container */
+      }
+
+      .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensures the image covers the container without distortion */
+      }
+
+      .card__title {
+        font-weight: 600;
+        font-size: 24px;
+        color: #fff;
+      }
+
+      .card__subtitle {
+        font-weight: 300;
+        font-size: 15px;
+        color: #fff;
+        letter-spacing: 0.5px;
+        text-align: justify;
+      }
+
+      .card__price {
+        font-weight: 600;
+        font-size: 22px;
+        color: #fff;
+      }
+
+      .card__counter {
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: 10px;
+        background: #666;
+        padding: 5px;
+        border-radius: 50px;
+      }
+
+      .card__counter-score,
+      .card__btn {
+        font-weight: 600;
+        font-size: 30px;
+        color: #fff;
+        display: flex; /* Enables flexbox */
+        justify-content: space-between;
+      }
+
+      .card__btn {
+        font-weight: 600;
+        font-size: 25px;
+        color: #fff;
+        background: transparent;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
       }
 
       .card:hover {
@@ -55,10 +118,19 @@
         padding: 20px 0;
         text-align: center;
       }
+
+      .card__content {
+        flex-grow: 1; /* Ensure the card content fills available space */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
     </style>
   </head>
   <body>
     <!-- Navigation Bar -->
+    {% load static %}
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">My E-Commerce</a>
@@ -81,10 +153,34 @@
               >
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'cart_view' %}" id="cart-link">Cart (0)</a>
+              <a class="nav-link" href="{% url 'cart_view' %}" id="cart-link">Cart ({{cart_item_count}})</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+            </li>
+
+            <!-- Profile Icon with Dropdown -->
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img
+                  src="{% static 'store/user-2.png' %}"
+                  alt="Profile"
+                  class="rounded-circle"
+                  style="width: 30px; height: 30px; background-color: #fff;"
+                />
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -97,26 +193,36 @@
       <div class="row">
         {% for product in products %}
         <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
-          <div class="card">
-            <img
-              src="{{ product.image.url }}"
-              class="card-img-top"
-              alt="{{ product.name }}"
-            />
-            <div class="card-body text-center">
-              <h5 class="card-title">{{ product.name }}</h5>
-              <p class="card-text">₹{{ product.price }}</p>
-              <a
-                href="{% url 'product_detail' product.id %}"
-                class="btn btn-primary mt-2"
-                >View Details
-              </a>
-              <button
-                class="btn btn-success btn-custom add_to_cart"
-                data-product-id="{{ product.id }}"
+          <div class="card" data-href="{% url 'product_detail' product.id %}">
+            <div class="card__img">
+              {% if product.image %}
+              <img
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+                class="product-img"
+              />
+              {% else %}
+              <svg
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
               >
-                Add to Cart
-              </button>
+                <path
+                  fill="#303c42"
+                  d="m23.8535156 1.6464844-1.5-1.5c-.1953125-.1953125-.5117188-.1953125-.7070312 0l-1.9173584 1.9173584c-.1885986-.098999-.4240723-.0759277-.5826416.0826416l-3.7880859 3.7880859c-1.9462891-.5317383-4.0078125.0078125-5.4482422 1.4477539l-9.0566406 9.0571289c-.5507813.5498047-.8535157 1.2817383-.8535157 2.0605469s.3027344 1.5107422.8535156 2.0605469l2.5859375 2.5859375c.5507813.5502929 1.2832031.8535156 2.0605469.8535156s1.5097656-.3032227 2.0605469-.8535156l9.0566406-9.0571289c1.4404297-1.4394531 1.9814453-3.5014648 1.4482422-5.4477539l3.7880859-3.7880859c.1585693-.1585693.1816406-.394043.0826416-.5826416l1.9173584-1.9173584c.1953125-.1953126.1953125-.5117188 0-.7070313z"
+                ></path>
+              </svg>
+              {% endif %}
+            </div>
+            <div class="card__content">
+              <div class="card__title">{{ product.name }}</div>
+              <div class="card__subtitle">{{ product.description }}</div>
+              <div class="card__price">₹{{ product.price }}</div>
+              <div class="card__counter">
+                <button class="card__btn remove_from_cart" data-product-id="{{ product.id }}" {% if product.quantity_in_cart == 0 %}disabled{% endif %}> - </button>
+                <div class="card__counter-score" data-product-id="{{ product.id }}">{{ product.quantity_in_cart }}</div>
+                <button class="card__btn add_to_cart" data-product-id="{{ product.id }}">+</button>
+              </div>
             </div>
           </div>
         </div>
@@ -136,24 +242,72 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        $(document).on("click", ".add_to_cart", function () {
-          const productId = $(this).data("product-id"); // Fetch product ID
-          const addToCartUrl = '/add_to_cart/' + productId + '/'; // Ensure the URL matches Django routing
-      
+      // Add to cart functionality (+ button)
+      $(document).on("click", ".add_to_cart", function () {
+          const productId = $(this).data("product-id");
+          const addToCartUrl = "/add_to_cart/" + productId + "/";
+  
           $.ajax({
-            url: addToCartUrl,
-            method: "GET",
-            success: function (response) {
-              console.log("Response:", response); // Log for debugging
-              // Update the cart count in the navbar without the pop-up
-              $("#cart-link").text("Cart (" + response.cart_item_count + ")");
-            },
-            error: function (xhr, status, error) {
-              console.error("Error:", xhr.responseText); // Log detailed error
-              alert("An error occurred. Please try again.");
-            },
+              url: addToCartUrl,
+              method: "GET",
+              success: function (response) {
+                  // Update the cart count in the navbar
+                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+  
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                  if (quantityDiv.length) {
+                      quantityDiv.text(response.updated_quantity); // Update the displayed quantity
+                  }
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
           });
-        });
-      </script>
+      });
+  
+      // Remove from cart functionality (- button)
+      $(document).on("click", ".remove_from_cart", function () {
+          const productId = $(this).data("product-id");
+          const removeFromCartUrl = "/remove_from_cart/" + productId + "/";
+  
+          $.ajax({
+              url: removeFromCartUrl,
+              method: "GET",
+              success: function (response) {
+                  // Update the cart count in the navbar
+                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+  
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                  if (quantityDiv.length) {
+                      quantityDiv.text(response.updated_quantity);
+                  }
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
+          });
+      });
+  
+      // Card click navigation
+      document.addEventListener("DOMContentLoaded", function () {
+          const cards = document.querySelectorAll(".card");
+          cards.forEach((card) => {
+              card.addEventListener("click", function (event) {
+                  if (
+                      event.target.classList.contains("card__btn") ||
+                      event.target.closest(".card__btn")
+                  ) {
+                      return;
+                  }
+                  const href = card.getAttribute("data-href");
+                  if (href) {
+                      window.location.href = href;
+                  }
+              });
+          });
+      });
+    </script>
   </body>
 </html>
