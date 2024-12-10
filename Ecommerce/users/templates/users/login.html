@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Form</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full height of the viewport */
+        background-color: #f0f0f0;
+      }
+
+      .form-container {
+        width: 350px;
+        background-color: #fff;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        border-radius: 10px;
+        padding: 20px 30px;
+        height: auto;
+      }
+
+      .title {
+        text-align: center;
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 20px;
+      }
+
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .input {
+        border-radius: 20px;
+        border: 1px solid #c0c0c0;
+        padding: 12px 15px;
+      }
+
+      .page-link {
+        text-align: end;
+        color: #747474;
+      }
+
+      .form-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .form-btn:active {
+        background-color: #0056b3;
+      }
+
+      .sign-up-label {
+        text-align: center;
+        font-size: 14px;
+        color: #777;
+      }
+
+      .sign-up-link {
+        color: #007bff;
+        cursor: pointer;
+      }
+
+      .messages {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+      }
+
+      .message {
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <p class="title">Welcome back</p>
+
+      <form class="form" method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <!-- Input fields -->
+        <input type="text" name="username" class="input" placeholder="Username" />
+        <input type="password" name="password" class="input" placeholder="Password" />
+
+        <p class="page-link">
+            <span class="page-link-label">Forgot Password?</span>
+        </p>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="form-btn">Log in</button>
+      </form>
+
+      <p class="sign-up-label">
+        Don't have an account? <a href="{% url 'register' %}" class="sign-up-link">Sign up</a>
+      </p>
+    </div>
+  </body>
+</html>

@@ -16,9 +16,9 @@ urlpatterns = [
     path('order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),  # Order confirmation page
     path('contact/', views.contact_view, name='contact'), # contact.
     # path('signup/', include('django.contrib.auth.urls')),  # URL pattern for sign-up page
-    path('signup/', views.sign_up, name='signup'),  # URL pattern for sign-up page
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
+    # path('signup/', views.sign_up, name='signup'),  # URL pattern for sign-up page
+    # path('login/', views.login_view, name='login'),
+    # path('logout/', views.logout_view, name='logout'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:

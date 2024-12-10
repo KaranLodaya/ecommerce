@@ -2,15 +2,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Product, Cart, CartItem, Order
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm, CustomAuthenticationForm
-from django.contrib.auth import login, authenticate, logout
-from django.contrib import messages
-from django.contrib.auth.models import User
+# from django.contrib.auth.forms import UserCreationForm
+# from django.contrib.auth import login
+# from users.forms import CustomUserCreationForm, CustomAuthenticationForm
+# from django.contrib.auth import login, authenticate, logout
+# from django.contrib import messages
+# from django.contrib.auth.models import User
 
 
 # View for listing products
+@login_required
 def product_list(request):
     products = Product.objects.all()
     
@@ -193,95 +194,90 @@ def contact_view(request):
     return render(request, "Store/contact.html")
 
 
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.shortcuts import render, redirect
-import re
+# def sign_up(request):
+#     if request.method == 'POST':
+#         name = request.POST.get('name')
+#         email = request.POST.get('email').lower()  # Normalize email to lowercase
+#         password = request.POST.get('password')
+#         confirm_password = request.POST.get('confirm_password')  # Add confirm password field
 
-def sign_up(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email').lower()  # Normalize email to lowercase
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')  # Add confirm password field
+#         # Check if the required fields are present
+#         if not email or not password or not name or not confirm_password:
+#             messages.error(request, "All fields are required!")
+#             return render(request, 'store/signup.html')
 
-        # Check if the required fields are present
-        if not email or not password or not name or not confirm_password:
-            messages.error(request, "All fields are required!")
-            return render(request, 'store/signup.html')
+#         # Check if the email is valid (basic validation)
+#         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+#             messages.error(request, "Invalid email address!")
+#             return render(request, 'store/signup.html')
 
-        # Check if the email is valid (basic validation)
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            messages.error(request, "Invalid email address!")
-            return render(request, 'store/signup.html')
+#         # Check if the email already exists
+#         if User.objects.filter(email=email).exists():
+#             messages.error(request, "Email already exists!")
+#             return render(request, 'store/signup.html')
 
-        # Check if the email already exists
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already exists!")
-            return render(request, 'store/signup.html')
+#         # Password length check (optional)
+#         if len(password) < 8:
+#             messages.error(request, "Password must be at least 8 characters long!")
+#             return render(request, 'store/signup.html')
 
-        # Password length check (optional)
-        if len(password) < 8:
-            messages.error(request, "Password must be at least 8 characters long!")
-            return render(request, 'store/signup.html')
+#         # Check if passwords match
+#         if password != confirm_password:
+#             messages.error(request, "Passwords do not match!")
+#             return render(request, 'store/signup.html')
 
-        # Check if passwords match
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match!")
-            return render(request, 'store/signup.html')
+#         try:
+#             # Create the user
+#             user = User.objects.create_user(username=name, email=email, password=password)
+#             user.first_name = name
+#             user.save()
 
-        try:
-            # Create the user
-            user = User.objects.create_user(username=name, email=email, password=password)
-            user.first_name = name
-            user.save()
+#             # Create a cart for the new user
+#             Cart.objects.create(user=user)
 
-            # Create a cart for the new user
-            Cart.objects.create(user=user)
+#             messages.success(request, 'Account created successfully!')
+#             return redirect('product_list')  # Redirect to product list page after successful signup
 
-            messages.success(request, 'Account created successfully!')
-            return redirect('product_list')  # Redirect to product list page after successful signup
+#         except Exception as e:
+#             messages.error(request, f"An error occurred: {e}")
+#             return render(request, 'store/signup.html')
 
-        except Exception as e:
-            messages.error(request, f"An error occurred: {e}")
-            return render(request, 'store/signup.html')
-
-    return render(request, 'store/signup.html')  # Render the signup form if it's a GET request
+#     return render(request, 'store/signup.html')  # Render the signup form if it's a GET request
 
 
-def login_view(request):
-    if request.method == 'POST':
-        # Get the username (name) and password from the form
-        name = request.POST.get('name')
-        password = request.POST.get('password')
+# def login_view(request):
+#     if request.method == 'POST':
+#         # Get the username (name) and password from the form
+#         name = request.POST.get('name')
+#         password = request.POST.get('password')
 
-        # Check if both the username and password are provided
-        if not name or not password:
-            messages.error(request, "Name and password are required!")
-            return render(request, 'store/login.html')
+#         # Check if both the username and password are provided
+#         if not name or not password:
+#             messages.error(request, "Name and password are required!")
+#             return render(request, 'store/login.html')
 
-        # Authenticate the user using the username and password
-        user = authenticate(request, username=name, password=password)
+#         # Authenticate the user using the username and password
+#         user = authenticate(request, username=name, password=password)
 
-        if user is not None:
-            # Successful login
-            login(request, user)
+#         if user is not None:
+#             # Successful login
+#             login(request, user)
 
-            # Ensure the user has a cart
-            if not Cart.objects.filter(user=user).exists():
-                Cart.objects.create(user=user)
+#             # Ensure the user has a cart
+#             if not Cart.objects.filter(user=user).exists():
+#                 Cart.objects.create(user=user)
 
-            messages.success(request, "Login successful!")
-            return redirect('product_list')  # Redirect to the product list or homepage
-        else:
-            # Failed login attempt (invalid credentials)
-            messages.error(request, "Invalid name or password.")
-            return render(request, 'store/login.html')
+#             messages.success(request, "Login successful!")
+#             return redirect('product_list')  # Redirect to the product list or homepage
+#         else:
+#             # Failed login attempt (invalid credentials)
+#             messages.error(request, "Invalid name or password.")
+#             return render(request, 'store/login.html')
 
-    return render(request, 'store/login.html')
+#     return render(request, 'store/login.html')
 
 
-def logout_view(request):
-    logout(request)
-    return redirect('login')  # Redirect to login page after logout
+# def logout_view(request):
+#     logout(request)
+#     return redirect('login')  # Redirect to login page after logout
 
