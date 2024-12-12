@@ -12,7 +12,20 @@
     <style>
       body {
         background-color: #f4f5f7;
+        font-family:'Times New Roman', Times, serif;
       }
+
+      h5 {
+        display: block;
+        font-size: 24px;
+        margin-top: 0.67em;
+        margin-bottom: 0.67em;
+        margin-left: 0;
+        margin-right: 0;
+        font-weight:500;
+        font-family:Georgia, 'Times New Roman', Times, serif;
+      }
+
       .card-body {
         padding: 1.5rem;
       }
@@ -34,7 +47,7 @@
         border-radius: 5px; /* Optional for rounded corners */
       }
       .total-price {
-        font-size: 1.5rem;
+        font-size: 1.7rem;
         font-weight: bold;
       }
       .btn-remove {
@@ -65,13 +78,259 @@
       .checkout-button:hover {
         background-color: #218838;
       }
+
+
+      .interactive-box {
+      background-color: #ffffff;
+      display: flex;
+      width: 270px;
+      height: 120px;
+      position: relative;
+      border-radius: 6px;
+      transition: 0.3s ease-in-out;
+      text-decoration: none;
+    }
+
+    .interactive-box:hover {
+      transform: scale(1.03);
+    }
+
+    .interactive-box:hover .interactive-left {
+      width: 100%;
+    }
+
+    .interactive-left {
+      background-color: #5eb9f1;
+      width: 130px;
+      height: 120px;
+      border-radius: 4px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.3s;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .interactive-right {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      cursor: pointer;
+      justify-content: space-between;
+      white-space: nowrap;
+      transition: 0.3s;
+    }
+
+    .interactive-right:hover {
+      background-color: #f9f7f9;
+    }
+
+    .interactive-arrow {
+      width: 20px;
+      height: 20px;
+      margin-right: 20px;
+    }
+
+    .interactive-text {
+      font-size: 28px;
+      font-family: "Times New Roman", Times, serif;
+      margin-left: 20px;
+      color: rgb(0, 0, 0);      
+      text-decoration:none; 
+    }
+
+    .interactive-card {
+      width: 70px;
+      height: 46px;
+      background-color: #125a9a;
+      border-radius: 6px;
+      position: absolute;
+      display: flex;
+      z-index: 10;
+      flex-direction: column;
+      align-items: center;
+      -webkit-box-shadow: 9px 9px 9px -2px #0a4477;
+      -moz-box-shadow: 9px 9px 9px -2px #0a4477;
+      box-shadow: 9px 9px 9px -2px #0a4477;
+    }
+
+    .interactive-card-line {
+      width: 65px;
+      height: 13px;
+      background-color: #4c4b4b;
+      border-radius: 2px;
+      margin-top: 7px;
+    }
+
+    @media only screen and (max-width: 480px) {
+      .interactive-box {
+        transform: scale(0.7);
+      }
+
+      .interactive-box:hover {
+        transform: scale(0.74);
+      }
+
+      /* .interactive-text {
+        font-size: 24px;
+      } */
+    }
+
+    .interactive-buttons {
+      width: 8px;
+      height: 8px;
+      background-color: #1f659e;
+      box-shadow: 0 -10px 0 0 #0e4c85, 0 10px 0 0 #3e78be;
+      border-radius: 50%;
+      margin-top: 5px;
+      transform: rotate(90deg);
+      margin: 10px 0 0 -30px;
+    }
+
+    .interactive-box:hover .interactive-card {
+      animation: interactive-slide-top 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+    }
+
+    .interactive-box:hover .interactive-post {
+      animation: interactive-slide-post 1s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+    }
+
+    @keyframes interactive-slide-top {
+      0% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+      }
+
+      50% {
+        -webkit-transform: translateY(-70px) rotate(90deg);
+        transform: translateY(-70px) rotate(90deg);
+      }
+
+      60% {
+        -webkit-transform: translateY(-70px) rotate(90deg);
+        transform: translateY(-70px) rotate(90deg);
+      }
+
+      100% {
+        -webkit-transform: translateY(-8px) rotate(90deg);
+        transform: translateY(-8px) rotate(90deg);
+      }
+    }
+
+    .interactive-post {
+      width: 63px;
+      height: 75px;
+      background-color: #dddde0;
+      position: absolute;
+      z-index: 11;
+      bottom: 10px;
+      top: 120px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .interactive-post-line {
+      width: 47px;
+      height: 9px;
+      background-color: #545354;
+      position: absolute;
+      border-radius: 0px 0px 3px 3px;
+      right: 8px;
+      top: 8px;
+    }
+
+    .interactive-post-line:before {
+      content: "";
+      position: absolute;
+      width: 47px;
+      height: 9px;
+      background-color: #757375;
+      top: -8px;
+    }
+
+    .interactive-screen {
+      width: 47px;
+      height: 23px;
+      background-color: #ffffff;
+      position: absolute;
+      top: 22px;
+      right: 8px;
+      border-radius: 3px;
+    }
+
+    .interactive-numbers {
+      width: 12px;
+      height: 12px;
+      background-color: #838183;
+      box-shadow: 0 -18px 0 0 #838183, 0 18px 0 0 #838183;
+      border-radius: 2px;
+      position: absolute;
+      transform: rotate(90deg);
+      left: 25px;
+      top: 52px;
+    }
+
+    .interactive-numbers-line2 {
+      width: 12px;
+      height: 12px;
+      background-color: #aaa9ab;
+      box-shadow: 0 -18px 0 0 #aaa9ab, 0 18px 0 0 #aaa9ab;
+      border-radius: 2px;
+      position: absolute;
+      transform: rotate(90deg);
+      left: 25px;
+      top: 68px;
+    }
+
+    @keyframes interactive-slide-post {
+      50% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+      }
+
+      100% {
+        -webkit-transform: translateY(-70px);
+        transform: translateY(-70px);
+      }
+    }
+
+    .interactive-currency {
+      position: absolute;
+      font-size: 16px;
+      font-family: "Lexend Deca", sans-serif;
+      width: 100%;
+      left: 0;
+      top: 0;
+      color: #4b953b;
+      text-align: center;
+    }
+
+    .interactive-box:hover .interactive-currency {
+      animation: interactive-fade-in-fwd 0.3s 1s backwards;
+    }
+
+    @keyframes interactive-fade-in-fwd {
+      0% {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     </style>
   </head>
   <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">My E-Commerce</a>
+        <a class="navbar-brand" href="#">UrbanCart</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -142,9 +401,25 @@
             <div class="card-body">
               <h5>Total Price:</h5>
               <p class="total-price">₹{{ total_price }}</p>
-              <a href="checkout" class="checkout-button w-100 text-center"
-                >Proceed to Checkout</a
-              >
+              <a href="/checkout" class="interactive-box">
+                <div class="interactive-left">
+                  <div class="interactive-card">
+                    <div class="interactive-card-line"></div>
+                    <div class="interactive-buttons"></div>
+                  </div>
+                  <div class="interactive-post">
+                    <div class="interactive-post-line"></div>
+                    <div class="interactive-screen">
+                      <div class="interactive-currency">₹</div>
+                    </div>
+                    <div class="interactive-numbers"></div>
+                    <div class="interactive-numbers-line2"></div>
+                  </div>
+                </div>
+                <div class="interactive-right">
+                    <div class="interactive-text">Checkout</div>
+                </div>
+              </a>
             </div>
           </div>
         </div>

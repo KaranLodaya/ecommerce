@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Product, Cart, CartItem, Order
 from django.contrib.auth.decorators import login_required
+from decimal import Decimal, ROUND_HALF_UP
+
 # from django.contrib.auth.forms import UserCreationForm
 # from django.contrib.auth import login
 # from users.forms import CustomUserCreationForm, CustomAuthenticationForm
@@ -162,6 +164,16 @@ def cart_view(request):
 def place_order(request):
     cart = get_object_or_404(Cart, user=request.user)
 
+    # Get updated cart items
+    cart_items = cart.items.all()
+
+    # Calculate total quantity and total price
+    cart_item_count = sum(item.quantity for item in cart.items.all())  # Updated to reflect total quantity
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+    shipping = Decimal('0.002') * total_price
+    shipping = shipping.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    total = total_price + shipping
+
     if request.method == "POST":
         shipping_address = request.POST.get("shipping_address", "")
 
@@ -180,7 +192,17 @@ def place_order(request):
 
         return redirect("order_confirmation", order_id=order.id)
 
-    return render(request, "store/checkout.html", {"cart": cart})
+    return render(
+        request, "store/checkout.html", 
+        {
+            "cart": cart,
+            "cart_items": cart_items,
+            "cart_item_count": cart_item_count,
+            "total_price": total_price,
+            "shipping":shipping,
+            "total":total,
+        }
+    )
 
 
 # View to confirm the order
