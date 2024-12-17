@@ -41,14 +41,6 @@
       display: flex;
     }
 
-    checkoutbutton{
-      min-height: 100vh;
-      font-family: Roboto, Arial;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #E4ECFA;
-    }
 
     /* Master container now stacks vertically */
     .master-container {
@@ -56,7 +48,7 @@
       flex-direction: column; /* Stack cards vertically */
       gap: 10px;
       width: 80%;
-      max-width: 600px; /* Adjusted for vertical layout */
+      max-width: 100%; /* Adjusted for vertical layout */
       height: 80%;
       padding: 20px;
       justify-content: center;
@@ -71,6 +63,13 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }
+
+    .card__counter-score,
+    .card__btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .title {
@@ -214,213 +213,9 @@
     }
 
 
-    .checkout-btn {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 150px;
-      height: 36px;
-      background: linear-gradient(180deg, #4480FF 0%, #115DFC 50%, #0550ED 100%);
-      border-radius: 7px;
-      color: #ffffff;
-      font-size: 13px;
-      font-weight: 600;
-      border: none;
-      transition: all 0.3s;
-      cursor: pointer;
-      margin: 0,auto;
-    }
+    
 
-    .checkout-btn:hover {
-      background: linear-gradient(180deg, #3a6df7 0%, #0f5fe2 50%, #0e4dbb 100%);
-    }
-
-    .order {
-      appearance: none;
-      border: 0;
-      background: var(--dark);
-      position: relative;
-      height: 63px;
-      width: 240px;
-      padding: 0;
-      outline: none;
-      cursor: pointer;
-      border-radius: 32px;
-      overflow: hidden;
-      transition: transform .3s ease;
-      margin: 0,auto;
-    }
-
-    .order span {
-      --o: 1;
-      position: absolute;
-      left: 0;
-      right: 0;
-      text-align: center;
-      top: 19px;
-      line-height: 24px;
-      color: var(--white);
-      font-size: 16px;
-      font-weight: 500;
-      opacity: var(--o);
-      transition: opacity .3s ease;
-    }
-
-    .order span.default {
-      transition-delay: .3s;
-    }
-
-    .order span.success {
-      --offset: 16px;
-      --o: 0;
-    }
-
-    .order span.success svg {
-      width: 12px;
-      height: 10px;
-      display: inline-block;
-      vertical-align: top;
-      fill: none;
-      margin: 7px 0 0 4px;
-      stroke: var(--green);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 16px;
-      stroke-dashoffset: var(--offset);
-      transition: stroke-dashoffset .3s ease;
-    }
-
-    .order:active {
-      transform: scale(.96);
-    }
-
-    .lines {
-      opacity: 0;
-      position: absolute;
-      height: 0px;
-      background: var(--white);
-      border-radius: 2px;
-      width: 0px;
-      top: 25px;
-      left: 100%;
-    }
-
-    .truck {
-      width: 60px;
-      height: 41px;
-      left: 100%;
-      z-index: 1;
-      top: 3px;
-      position: absolute;
-      transform: translateX(24px);
-    }
-
-    .box {
-      width: 60px;
-      height: 41px;
-      right: 110%;
-      z-index: 1;
-      top: 16px;
-      position: absolute;
-      transform: translateX(24px);
-    }
-
-    .truck .back,
-    .truck .box {
-      --start: var(--white);
-      --stop: var(--grey-light);
-      border-radius: 2px;
-      background: linear-gradient(var(--start), var(--stop));
-      position: absolute;
-    }
-
-    .order.animate .default {
-      --o: 0;
-      transition-delay: 0s;
-    }
-
-    .order.animate .success {
-      --offset: 0;
-      --o: 1;
-      transition-delay: 7s;
-    }
-
-    .order.animate .success svg {
-      transition-delay: 7.3s;
-    }
-
-    .order.animate .truck {
-      animation: truck 10s ease forwards;
-    }
-
-    .order.animate .box {
-      animation: box 10s ease forwards;
-    }
-
-    .order.animate .lines {
-      animation: lines 10s ease forwards;
-    }
-
-    .order.animate .truck svg {
-      animation: truckSVG 10s ease forwards;
-    }
-
-    @keyframes truck {
-      10%,
-      30% {
-        transform: translateX(-164px);
-      }
-      40% {
-        transform: translateX(-224px);
-      }
-      60% {
-        transform: translateX(-184px);
-      }
-      75%,
-      100% {
-        transform: translateX(24px);
-      }
-    }
-
-    @keyframes lines {
-      0%,
-      30% {
-        opacity: 0;
-        transform: scaleY(.7) translateX(0);
-      }
-      35%,
-      65% {
-        opacity: 1;
-      }
-      70% {
-        opacity: 0;
-      }
-      100% {
-        transform: scaleY(.7) translateX(-400px);
-      }
-    }
-
-    @keyframes box {
-      8%,
-      10% {
-        transform: translateX(100px);
-        opacity: 1;
-      }
-      25% {
-        transform: translateX(150px);
-        opacity: 1;
-      }
-      26% {
-        transform: translateX(180px);
-        opacity: 0;
-      }
-      27%,
-      100% {
-        transform: translateX(0px);
-        opacity: 0;
-      }
-    }
+    
 
   </style>
 </head>
@@ -434,19 +229,11 @@
           <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px;"/>
           <span>{{ item.product.name }}</span>
           <div class="quantity">
-            <button>
-              <svg fill="none" viewBox="0 0 24 24" height="14" width="14" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="#47484b" d="M20 12L4 12"></path>
-              </svg>
-            </button>
-            <label>{{ item.quantity }}</label>
-            <button>
-              <svg fill="none" viewBox="0 0 24 24" height="14" width="14" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="#47484b" d="M12 4V20M20 12H4"></path>
-              </svg>
-            </button>
+            <button class="card__btn remove_from_cart" data-product-id="{{ item.product.id }}" {% if product.quantity_in_cart == 0 %}disabled{% endif %}> - </button>
+            <div class="card__counter-score" data-product-id="{{ item.product.id }}">{{ item.quantity }}</div>
+            <button class="card__btn add_to_cart" data-product-id="{{ item.product.id }}">+</button>
           </div>
-          <label class="price small">${{ item.product.price }}</label>
+          <label class="price small">₹{{ item.product.price }}</label>
         </div>
         {% endfor %}
       </div>
@@ -456,88 +243,65 @@
       <label class="title">Checkout</label>
       <div class="details">
         <span>Your cart subtotal:</span>
-        <span class="shipping-fee">₹{{ total_price }}</span>
+        <span id="total-price">₹{{ total_price }}</span>
         <span>Shipping fees:</span>
-        <span class="shipping-fee">₹{{ shipping }}</span>
+        <span id="shipping-fees">₹{{ shipping }}</span>
       </div>
       <div class="checkout--footer">
-        <label class="price align-content-center"> <span>Total: ₹</span> {{ total }} </label>
-    </div>
-    <div style="display: flex;flex-direction: column;align-items: center;">
-        <button class="order align-content-center " >
-        <span class="default">Place Order</span>
-        <span class="success">Order Placed
-          <!-- tick mark -->
-          <svg viewBox="0 0 12 10">
-            <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-          </svg>
-        </span>
-        <div class="box">
-          <!-- box svg -->
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="30" height="30" fill="url(#paint0_linear_2001_280)"/>
-              <rect y="14.4445" width="30" height="1.11111" fill="#D89C00"/>
-              <defs>
-              <linearGradient id="paint0_linear_2001_280" x1="15" y1="0" x2="15" y2="30" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#FFE194"/>
-              <stop offset="1" stop-color="#F3D17A"/>
-              </linearGradient>
-              </defs>
-          </svg>
-        </div>
-        <div class="truck">
-          <!-- Truck SVG (from your provided SVG) -->
-          <svg width="188" height="56" viewBox="0 0 188 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect y="1" width="126.25" height="55" rx="5" fill="url(#paint0_linear_2001_461)"/>
-              <path d="M131.252 7.25H159.252C160.356 7.25 161.252 8.14543 161.252 9.25V48C161.252 49.6569 159.908 51 158.252 51H131.252V7.25Z" fill="#0080CD"/>
-              <rect x="126.251" y="16" width="5" height="26.25" fill="#0BA8FF"/>
-              <path d="M138.751 16H140.626C147.875 16 153.751 21.8763 153.751 29.125C153.751 36.3738 147.875 42.25 140.626 42.25H138.751V16Z" fill="#212121"/>
-              <mask id="mask0_2001_461" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="138" y="16" width="16" height="27">
-              <path d="M138.749 16H140.624C147.873 16 153.749 21.8762 153.749 29.125C153.749 36.3737 147.873 42.25 140.624 42.25H138.749V16Z" fill="#212121"/>
-              </mask>
-              <g mask="url(#mask0_2001_461)">
-              <rect opacity="0.5" x="136.25" y="27.7171" width="17.5" height="3.75" transform="rotate(-22.5717 136.25 27.7171)" fill="#D9D9D9"/>
-              <rect opacity="0.5" x="136.25" y="33.9671" width="20.9108" height="3.75" transform="rotate(-22.5717 136.25 33.9671)" fill="#D9D9D9"/>
-              </g>
-              <rect x="160" y="16" width="1.25" height="7.5" rx="0.625" fill="#FEFD01"/>
-              <rect x="160" y="34.75" width="1.25" height="7.5" rx="0.625" fill="#FEFD01"/>
-              <rect y="7" width="1.25" height="18.75" fill="#D9D9D9"/>
-              <rect y="32" width="1.25" height="18.75" fill="#D9D9D9"/>
-              <path d="M161 16.5L188 0V32L161 23V16.5Z" fill="url(#paint1_linear_2001_461)"/>
-              <path d="M161 35.5L188 19V51L161 42V35.5Z" fill="url(#paint2_linear_2001_461)"/>
-              <defs>
-              <linearGradient id="paint0_linear_2001_461" x1="63.125" y1="1" x2="63.125" y2="56" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#FDFFFF"/>
-              <stop offset="1" stop-color="#B3B3B3"/>
-              </linearGradient>
-              <linearGradient id="paint1_linear_2001_461" x1="145.045" y1="32" x2="186.773" y2="32" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#FEFD01"/>
-              <stop offset="1" stop-color="#FEFD01" stop-opacity="0"/>
-              </linearGradient>
-              <linearGradient id="paint2_linear_2001_461" x1="145.045" y1="51" x2="186.773" y2="51" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#FEFD01"/>
-              <stop offset="1" stop-color="#FEFD01" stop-opacity="0"/>
-              </linearGradient>
-              </defs>
-          </svg>
-              
-        </div>
-        <div class="lines">
-          <svg width="345" height="2" viewBox="0 0 345 2" fill="none" xmlns="http://www.w3.org/2000/svg"><line y1="1" x2="345" y2="1" stroke="white" stroke-width="2" stroke-dasharray="6 6"/></svg> 
-        </div>
-      </button>
-    </div>
+        <label class="price align-content-center" id="grand-total"> <span>Total: ₹</span> {{ total }} </label>
+      </div>
     </div>
   </div>
-
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    document.querySelector('.order').addEventListener('click', function () {
-        const button = this;
+    
+    
 
-        if (!button.classList.contains('animate')) {
-            button.classList.add('animate');
-        }
-    });
+      // Add to cart functionality (+ button)
+      $(document).on("click", ".add_to_cart", function () {
+          const productId = $(this).data("product-id");
+          const addToCartUrl = "/add_to_cart/" + productId + "/";
+  
+          $.ajax({
+              url: addToCartUrl,
+              method: "GET",
+              success: function (response) { 
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                    quantityDiv.text(response.updated_quantity); // Update the displayed quantity
+
+                  $("#total-price").text('₹ '+response.total_price); // Update the total price
+                  $("#shipping-fees").text('₹ '+response.shipping); // Update shipping fees
+                  $("#grand-total").text('Total: ₹ '+response.total); // Update grand total
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
+          });
+      });
+  
+      // Remove from cart functionality (- button)
+      $(document).on("click", ".remove_from_cart", function () {
+          const productId = $(this).data("product-id");
+          const removeFromCartUrl = "/remove_from_cart/" + productId + "/";
+  
+          $.ajax({
+              url: removeFromCartUrl,
+              method: "GET",
+              success: function (response) {
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                    quantityDiv.text(response.updated_quantity);
+                    $("#total-price").text('₹'+response.total_price); // Update the total price
+                  $("#shipping-fees").text('₹'+response.shipping); // Update shipping fees
+                  $("#grand-total").text('Total: ₹ '+response.total); // Update grand total
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
+          });
+      });
   </script>
 </body>
 </html>

@@ -12,13 +12,10 @@ urlpatterns = [
     path('add_to_cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),  # Add product to cart
     path('remove_from_cart/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),      # Remove product from cart
     path('cart/', views.cart_view, name='cart_view'),  # View cart
-    path('checkout/', views.place_order, name='place_order'),  # Place an order
+    path('address/', views.address, name='address'), 
+    path('payments/', views.payments, name='payments'),  # Payment URL
     path('order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),  # Order confirmation page
     path('contact/', views.contact_view, name='contact'), # contact.
-    # path('signup/', include('django.contrib.auth.urls')),  # URL pattern for sign-up page
-    # path('signup/', views.sign_up, name='signup'),  # URL pattern for sign-up page
-    # path('login/', views.login_view, name='login'),
-    # path('logout/', views.logout_view, name='logout'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:

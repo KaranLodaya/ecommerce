@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal, ROUND_HALF_UP
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -21,60 +23,59 @@ class Product(models.Model):
     
 
 
+
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     def calculate_total(self):
-        """Recalculate the total price based on the cart items."""
-        self.total_price = sum(item.quantity * item.product.price for item in self.items.all())
+        # """Recalculate the total price based on the cart items, including shipping."""
+        # Start with the total price of all items in the cart
+        total_price = sum(item.quantity * item.product.price for item in self.items.all())
+
+        # Optionally, add shipping charges here
+        shipping_cost = Decimal("0.002") * total_price
+        shipping_cost = shipping_cost.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        total_price += shipping_cost
+
+        # Save the updated total price
+        self.total_price = total_price
         self.save()
 
     def __str__(self):
         return f"Cart for {self.user.username}"
 
-
-
-
     def add_item(self, product, quantity=1):
         """Add an item to the cart or update the quantity if already exists."""
-        # Create or get the CartItem
         cart_item, created = CartItem.objects.get_or_create(
             cart=self,
             product=product
         )
         
-        # If the item already exists, just update the quantity
         if not created:
             cart_item.quantity += quantity
         else:
             cart_item.quantity = quantity
         
-        # Save the updated CartItem and calculate total
         cart_item.save()
         self.calculate_total()
 
-
-
-
-    def remove_item(self, product,quantity=1):
+    def remove_item(self, product, quantity=1):
         """Remove an item from the cart."""
-        # get the CartItem
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=self,
-            product=product
-        )
+        cart_item = CartItem.objects.filter(cart=self, product=product).first()
         
-        # If the item already exists, just update the quantity
-        if not created:
+        if cart_item:
             cart_item.quantity -= quantity
-        else:
-            cart_item.quantity = quantity
-        
-        # Save the updated CartItem and calculate total
-        cart_item.save()
+            if cart_item.quantity <= 0:
+                cart_item.delete()  # Remove the item if quantity reaches 0
+            else:
+                cart_item.save()
         self.calculate_total()
+
+
 
 
 class CartItem(models.Model):
@@ -95,17 +96,39 @@ class CartItem(models.Model):
         self.cart.calculate_total()  # Recalculate total after CartItem save
 
 
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    is_billing = models.BooleanField(default=False)
+    is_shipping = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.user}, {self.address}, {self.city}, {self.state}, {self.zip_code}, {self.country}"
+
+
+
+
+class payment(models.Model):
+    pass
+    
+
+    
+
 class Order(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Completed', 'Completed'),
-        ('Cancelled', 'Cancelled'),
-    ]
+    # STATUS_CHOICES = [
+    #     ('Pending', 'Pending'),
+    #     ('Completed', 'Completed'),
+    #     ('Cancelled', 'Cancelled'),
+    # ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Associated with a user
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)  # Associated with a cart
-    shipping_address = models.TextField()
-    payment_status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
+    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)  # ForeignKey to Address
+    # payment_status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

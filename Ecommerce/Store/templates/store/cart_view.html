@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Your Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
@@ -12,7 +13,7 @@
     <style>
       body {
         background-color: #f4f5f7;
-        font-family:'Times New Roman', Times, serif;
+        font-family: "Times New Roman", Times, serif;
       }
 
       h5 {
@@ -22,10 +23,12 @@
         margin-bottom: 0.67em;
         margin-left: 0;
         margin-right: 0;
-        font-weight:500;
-        font-family:Georgia, 'Times New Roman', Times, serif;
+        font-weight: 500;
+        font-family: Georgia, "Times New Roman", Times, serif;
       }
-
+      .card{
+        border-radius: 16px;
+      }
       .card-body {
         padding: 1.5rem;
       }
@@ -46,20 +49,20 @@
         object-fit: cover; /* Ensures the image scales properly without distortion */
         border-radius: 5px; /* Optional for rounded corners */
       }
-      .total-price {
-        font-size: 1.7rem;
+      .total {
+        font-size: 1.2rem;
         font-weight: bold;
       }
-      .btn-remove {
-        background-color: #dc3545;
-        color: white;
+      .card__btn {
+        /* background-color: #dc3545; */
+        /* color: white; */
         border: none;
         padding: 5px 15px;
         border-radius: 5px;
         cursor: pointer;
       }
       .btn-remove:hover {
-        background-color: #c82333;
+        background-color: #d6d6d6;
       }
       .cart-header {
         font-size: 2rem;
@@ -79,258 +82,275 @@
         background-color: #218838;
       }
 
-
-      .interactive-box {
-      background-color: #ffffff;
-      display: flex;
-      width: 270px;
-      height: 120px;
-      position: relative;
-      border-radius: 6px;
-      transition: 0.3s ease-in-out;
-      text-decoration: none;
-    }
-
-    .interactive-box:hover {
-      transform: scale(1.03);
-    }
-
-    .interactive-box:hover .interactive-left {
-      width: 100%;
-    }
-
-    .interactive-left {
-      background-color: #5eb9f1;
-      width: 130px;
-      height: 120px;
-      border-radius: 4px;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: 0.3s;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .interactive-right {
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      cursor: pointer;
-      justify-content: space-between;
-      white-space: nowrap;
-      transition: 0.3s;
-    }
-
-    .interactive-right:hover {
-      background-color: #f9f7f9;
-    }
-
-    .interactive-arrow {
-      width: 20px;
-      height: 20px;
-      margin-right: 20px;
-    }
-
-    .interactive-text {
-      font-size: 28px;
-      font-family: "Times New Roman", Times, serif;
-      margin-left: 20px;
-      color: rgb(0, 0, 0);      
-      text-decoration:none; 
-    }
-
-    .interactive-card {
-      width: 70px;
-      height: 46px;
-      background-color: #125a9a;
-      border-radius: 6px;
-      position: absolute;
-      display: flex;
-      z-index: 10;
-      flex-direction: column;
-      align-items: center;
-      -webkit-box-shadow: 9px 9px 9px -2px #0a4477;
-      -moz-box-shadow: 9px 9px 9px -2px #0a4477;
-      box-shadow: 9px 9px 9px -2px #0a4477;
-    }
-
-    .interactive-card-line {
-      width: 65px;
-      height: 13px;
-      background-color: #4c4b4b;
-      border-radius: 2px;
-      margin-top: 7px;
-    }
-
-    @media only screen and (max-width: 480px) {
-      .interactive-box {
-        transform: scale(0.7);
+      :root {
+        --primary: #275efe;
+        --primary-light: #7699ff;
+        --dark: #1c212e;
+        --grey-dark: #3f4656;
+        --grey: #6c7486;
+        --grey-light: #cdd9ed;
+        --white: #fff;
+        --green: #16bf78;
+        --sand: #dcb773;
+        --sand-light: #edd9a9;
       }
 
-      .interactive-box:hover {
-        transform: scale(0.74);
+      * {
+        box-sizing: inherit;
       }
 
-      /* .interactive-text {
-        font-size: 24px;
+      body{
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+      }
+
+
+      .card__btn:hover{
+        background-color: #d6d6d6;
+      }
+
+      /*.master-container {
+        display: flex;
+        flex-direction: column; /* Stack cards vertically */
+      /* gap: 10px; */
+      /* width: 80%; */
+      /* max-width: 100%; Adjusted for vertical layout */
+      /* height: 80%; */
+      /* padding: 20px; */
+      /* justify-content: center; */
+      /* } */
+
+      /* .checkout-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 150px;
+        height: 36px;
+        background: linear-gradient(
+          180deg,
+          #4480ff 0%,
+          #115dfc 50%,
+          #0550ed 100%
+        );
+        border-radius: 7px;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        margin: 0, auto;
       } */
-    }
 
-    .interactive-buttons {
-      width: 8px;
-      height: 8px;
-      background-color: #1f659e;
-      box-shadow: 0 -10px 0 0 #0e4c85, 0 10px 0 0 #3e78be;
-      border-radius: 50%;
-      margin-top: 5px;
-      transform: rotate(90deg);
-      margin: 10px 0 0 -30px;
-    }
+      /* .checkout-btn:hover {
+        background: linear-gradient(
+          180deg,
+          #3a6df7 0%,
+          #0f5fe2 50%,
+          #0e4dbb 100%
+        );
+      } */
 
-    .interactive-box:hover .interactive-card {
-      animation: interactive-slide-top 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
-    }
-
-    .interactive-box:hover .interactive-post {
-      animation: interactive-slide-post 1s cubic-bezier(0.165, 0.84, 0.44, 1) both;
-    }
-
-    @keyframes interactive-slide-top {
-      0% {
-        -webkit-transform: translateY(0);
-        transform: translateY(0);
+      .order {
+        appearance: none;
+        border: 0;
+        background: var(--dark);
+        position: relative;
+        height: 63px;
+        width: 240px;
+        padding: 0;
+        outline: none;
+        cursor: pointer;
+        border-radius: 32px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        margin: 0, auto;
       }
 
-      50% {
-        -webkit-transform: translateY(-70px) rotate(90deg);
-        transform: translateY(-70px) rotate(90deg);
+      .order span {
+        --o: 1;
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        top: 19px;
+        line-height: 24px;
+        color: var(--white);
+        font-size: 16px;
+        font-weight: 500;
+        opacity: var(--o);
+        transition: opacity 0.3s ease;
       }
 
-      60% {
-        -webkit-transform: translateY(-70px) rotate(90deg);
-        transform: translateY(-70px) rotate(90deg);
+      .order span.default {
+        transition-delay: 0.3s;
       }
 
-      100% {
-        -webkit-transform: translateY(-8px) rotate(90deg);
-        transform: translateY(-8px) rotate(90deg);
-      }
-    }
-
-    .interactive-post {
-      width: 63px;
-      height: 75px;
-      background-color: #dddde0;
-      position: absolute;
-      z-index: 11;
-      bottom: 10px;
-      top: 120px;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .interactive-post-line {
-      width: 47px;
-      height: 9px;
-      background-color: #545354;
-      position: absolute;
-      border-radius: 0px 0px 3px 3px;
-      right: 8px;
-      top: 8px;
-    }
-
-    .interactive-post-line:before {
-      content: "";
-      position: absolute;
-      width: 47px;
-      height: 9px;
-      background-color: #757375;
-      top: -8px;
-    }
-
-    .interactive-screen {
-      width: 47px;
-      height: 23px;
-      background-color: #ffffff;
-      position: absolute;
-      top: 22px;
-      right: 8px;
-      border-radius: 3px;
-    }
-
-    .interactive-numbers {
-      width: 12px;
-      height: 12px;
-      background-color: #838183;
-      box-shadow: 0 -18px 0 0 #838183, 0 18px 0 0 #838183;
-      border-radius: 2px;
-      position: absolute;
-      transform: rotate(90deg);
-      left: 25px;
-      top: 52px;
-    }
-
-    .interactive-numbers-line2 {
-      width: 12px;
-      height: 12px;
-      background-color: #aaa9ab;
-      box-shadow: 0 -18px 0 0 #aaa9ab, 0 18px 0 0 #aaa9ab;
-      border-radius: 2px;
-      position: absolute;
-      transform: rotate(90deg);
-      left: 25px;
-      top: 68px;
-    }
-
-    @keyframes interactive-slide-post {
-      50% {
-        -webkit-transform: translateY(0);
-        transform: translateY(0);
+      .order span.success {
+        --offset: 16px;
+        --o: 0;
       }
 
-      100% {
-        -webkit-transform: translateY(-70px);
-        transform: translateY(-70px);
+      .order span.success svg {
+        width: 12px;
+        height: 10px;
+        display: inline-block;
+        vertical-align: top;
+        fill: none;
+        margin: 7px 0 0 4px;
+        stroke: var(--green);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 16px;
+        stroke-dashoffset: var(--offset);
+        transition: stroke-dashoffset 0.3s ease;
       }
-    }
 
-    .interactive-currency {
-      position: absolute;
-      font-size: 16px;
-      font-family: "Lexend Deca", sans-serif;
-      width: 100%;
-      left: 0;
-      top: 0;
-      color: #4b953b;
-      text-align: center;
-    }
+      .order:active {
+        transform: scale(0.96);
+      }
 
-    .interactive-box:hover .interactive-currency {
-      animation: interactive-fade-in-fwd 0.3s 1s backwards;
-    }
-
-    @keyframes interactive-fade-in-fwd {
-      0% {
+      .lines {
         opacity: 0;
-        transform: translateY(-5px);
+        position: absolute;
+        height: 0px;
+        background: var(--white);
+        border-radius: 2px;
+        width: 0px;
+        top: 32px;
+        left: 100%;
       }
 
-      100% {
-        opacity: 1;
-        transform: translateY(0);
+      .truck {
+        width: 60px;
+        height: 41px;
+        left: 100%;
+        z-index: 1;
+        top: 3px;
+        position: absolute;
+        transform: translateX(24px);
       }
-    }
 
+      .box {
+        width: 60px;
+        height: 41px;
+        right: 110%;
+        z-index: 1;
+        top: 16px;
+        position: absolute;
+        transform: translateX(24px);
+      }
+
+      .truck .back,
+      .truck .box {
+        --start: var(--white);
+        --stop: var(--grey-light);
+        border-radius: 2px;
+        background: linear-gradient(var(--start), var(--stop));
+        position: absolute;
+      }
+
+      .order.animate .default {
+        --o: 0;
+        transition-delay: 0s;
+      }
+
+      .order.animate .success {
+        --offset: 0;
+        --o: 1;
+        transition-delay: 3s;
+      }
+
+      .order.animate {
+        transition-delay: 3.3s;
+      }
+
+      .order.animate .truck {
+        animation: truck 5s ease forwards;
+      }
+
+      .order.animate .box {
+        animation: box 5s ease forwards;
+      }
+
+      .order.animate .lines {
+        animation: lines 5s ease forwards;
+      }
+
+      .order.animate {
+        animation: truckSVG 5s ease forwards;
+      }
+
+      @keyframes truck {
+        10%,
+        30% {
+          transform: translateX(-164px);
+        }
+        40% {
+          transform: translateX(-224px);
+        }
+        70% {
+          transform: translateX(-184px);
+        }
+        80%,
+        100% {
+          transform: translateX(24px);
+        }
+      }
+
+      @keyframes lines {
+        0%,
+        30% {
+          opacity: 0;
+          transform: scaleY(0.7) translateX(0);
+        }
+        35%,
+        65% {
+          opacity: 1;
+        }
+        70% {
+          opacity: 0;
+        }
+        100% {
+          transform: scaleY(0.7) translateX(-400px);
+        }
+      }
+
+      @keyframes box {
+        8%,
+        10% {
+          transform: translateX(100px);
+          opacity: 1;
+        }
+        25% {
+          transform: translateX(150px);
+          opacity: 1;
+        }
+        26% {
+          transform: translateX(180px);
+          opacity: 0;
+        }
+        27%,
+        100% {
+          transform: translateX(0px);
+          opacity: 0;
+        }
+      }
     </style>
   </head>
   <body>
     <!-- Navigation Bar -->
+    {% load static %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">UrbanCart</a>
+        <a class="navbar-brand" href="{% url 'product_list' %}">UrbanCart</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -342,21 +362,42 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div  id="navbarNav"> <!-- issue in navbar collapse -->
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'product_list' %}">Home</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link active"
-                href="{% url 'cart_view' %}"
-                id="cart-link"
-                >Cart({{cart_item_count}})</a
+              <a class="nav-link " href="{% url 'product_list' %}"
+                >Home</a
               >
             </li>
             <li class="nav-item">
+              <a class="nav-link active" href="{% url 'cart_view' %}" id="cart-link">Cart ({{cart_item_count}})</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+            </li>
+
+            <!-- Profile Icon with Dropdown -->
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img
+                  src="{% static 'store/user-2.png' %}"
+                  alt="Profile"
+                  class="rounded-circle"
+                  style="width: 30px; height: 30px; background-color: #fff;"
+                />
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -372,54 +413,374 @@
         <div class="col-md-8">
           <div class="cart-items">
             {% for item in cart.items.all %}
-            <div class="cart-item">
+            <div class="cart-item rounded-[26px]">
               <div class="d-flex align-items-center">
-                <img
-                  src="{{ item.product.image.url }}"
-                  alt="{{ item.product.name }}"
-                />
-                <div class="ms-3">
-                  <h3>{{ item.product.name }}</h3>
-                  <p class="mb-0">₹{{ item.product.price }}</p>
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"/>
+                <div class="text-xl m-sm-3">
+                  <h3 class="mb-3" >{{ item.product.name }}</h3>
+                  <p >₹{{ item.product.price }}</p>
                 </div>
               </div>
-              <div class="d-flex align-items-center">
-                <p class="mb-0 quantity-value">Quantity: {{ item.quantity }}</p>
-                <button
-                  class="btn-remove ms-3"
-                  data-product-id="{{ item.product.id }}"
-                >
-                  Remove
-                </button>
+
+              <div class="card__counter d-flex  align-items-center text-2xl">
+                <button class=" card__btn remove_from_cart" data-product-id="{{ item.product.id }}" {% if product.quantity_in_cart == 0 %}disabled{% endif %}> - </button>
+                <div class="m-3 card__counter-score" data-product-id="{{ item.product.id }}">{{ item.quantity }}</div>
+                <button class=" card__btn add_to_cart" data-product-id="{{ item.product.id }}">+</button>
               </div>
+
             </div>
             {% endfor %}
           </div>
+        
+
+
+
+          <!-- Heading for Existing Addresses -->
+          <div class=" mt-4 bg-white rounded-[26px] p-4 border border-black">
+            <h3 class="text-black font-extrabold text-2xl text-center">Existing Addresses</h3>
+            <ul>
+                {% for address in addresses %}
+                  <li class="mb-2">
+                    <label>
+                      <input
+                        type="radio"
+                        name="selected_address"
+                        value="{{ address.id }}"
+                        class="mr-2"
+                        required
+                      />
+                      {{ address.address }}, {{ address.city }} - {{ address.zip_code }}, {{ address.country }}
+                    </label>
+                  </li>
+              {% empty %}
+                <p>No addresses available.</p>
+              {% endfor %}
+            </ul>
+          </div>
+
+
+
+
+          <!-- Form to add a new address -->
+          <div class="cart-item mt-4 flex flex-col bg-white rounded-[26px] p-4 border border-black">
+            <h2 class="text-black font-bold text-lg"> Shipping Label Address Form </h2>
+            <form action=" {% url 'address' %} " method="POST">
+              {% csrf_token %}
+              <div class="mt-4">
+                <label class="text-black" for="name">Name</label>
+                <input
+                  placeholder="Your name"
+                  class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                  type="text"
+                  name="name"
+                  autocomplete="name"
+                  required
+                />
+              </div>
+    
+              <div class="mt-4">
+                <label class="text-black" for="address">Address</label>
+                <textarea
+                  placeholder="Your address"
+                  class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                  id="address"
+                  name="address"
+                  autocomplete="address-line1"
+                  required
+                ></textarea>
+              </div>
+    
+              <div class="mt-4 flex flex-row space-x-2">
+                <div class="flex-1">
+                  <label class="text-black" for="city">City</label>
+                  <input
+                    placeholder="Your city"
+                    class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                  />
+                </div>
+    
+                <div class="flex-1">
+                  <label class="text-black" for="state">State</label>
+                  <input
+                    placeholder="Your state"
+                    class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                    id="state"
+                    name="state"
+                    type="text"
+                    required
+                  />
+                </div>
+              </div>
+    
+              <div class="mt-4 flex flex-row space-x-2">
+                <div class="flex-1">
+                  <label class="text-black" for="zip_code">ZIP Code</label>
+                  <input
+                    placeholder="Your ZIP code"
+                    class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                    id="zip_code"
+                    name="zip_code"
+                    type="text"
+                    required
+                  />
+                </div>
+    
+                <div class="flex flex-row space-x-2">
+                  <div class="flex-1">
+                    <label class="text-black" for="country">Country</label>
+                    <select
+                        class="w-full bg-white rounded-md border border-black text-black px-2 py-1"
+                        id="country"
+                        name="country"
+                        autocomplete="country"
+                    >
+                        <option value="">Select a country</option>
+                        <optgroup label="Africa">
+                            <option value="AF">Afghanistan</option>
+                            <option value="DZ">Algeria</option>
+                            <option value="AO">Angola</option>
+                        </optgroup>
+                        <optgroup label="Asia">
+                            <option value="IN">India</option>
+                            <option value="JP">Japan</option>
+                            <option value="CN">China</option>
+                        </optgroup>
+                        <!-- Add more countries -->
+                    </select>
+                  </div>
+                </div>  
+              </div>
+
+              <!-- Form Error Message -->
+              {% if form_error %}
+              <div class="mt-4 text-red-600">
+                  {{ form_error }}
+              </div>
+              {% endif %}
+    
+              <input type="hidden" name="new_address" value="1">
+    
+              <div class="mt-4 flex justify-end">
+                <button class="bg-green-700 text-white rounded-md px-4 py-1 hover:bg-black transition-all duration-200" type="submit">
+                  Save Address
+                </button>
+              </div>
+            </form>
+          </div>    
         </div>
+
         <div class="col-md-4">
           <div class="card">
             <div class="card-body">
-              <h5>Total Price:</h5>
-              <p class="total-price">₹{{ total_price }}</p>
-              <a href="/checkout" class="interactive-box">
-                <div class="interactive-left">
-                  <div class="interactive-card">
-                    <div class="interactive-card-line"></div>
-                    <div class="interactive-buttons"></div>
+              <p id="subtotal">Subtotal: ₹{{ total_price }}</p>
+              <p id="shipping">Shipping: ₹{{shipping}}</p>
+              <p class = "total" id="total">Grand Total: ₹{{total}} </p>
+
+              <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="order align-content-center">
+                  <span class="default">Place Order</span>
+                  <span class="success"
+                    >Order Placed
+                    <!-- tick mark -->
+                    <svg viewBox="0 0 12 10">
+                      <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+                    </svg>
+                  </span>
+                  <div class="box">
+                    <!-- box svg -->
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 30 30"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        width="30"
+                        height="30"
+                        fill="url(#paint0_linear_2001_280)"
+                      />
+                      <rect
+                        y="14.4445"
+                        width="30"
+                        height="1.11111"
+                        fill="#D89C00"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="paint0_linear_2001_280"
+                          x1="15"
+                          y1="0"
+                          x2="15"
+                          y2="30"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#FFE194" />
+                          <stop offset="1" stop-color="#F3D17A" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </div>
-                  <div class="interactive-post">
-                    <div class="interactive-post-line"></div>
-                    <div class="interactive-screen">
-                      <div class="interactive-currency">₹</div>
-                    </div>
-                    <div class="interactive-numbers"></div>
-                    <div class="interactive-numbers-line2"></div>
+                  <div class="truck">
+                    <!-- Truck SVG (from your provided SVG) -->
+                    <svg
+                      width="188"
+                      height="56"
+                      viewBox="0 0 188 56"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        y="1"
+                        width="126.25"
+                        height="55"
+                        rx="5"
+                        fill="url(#paint0_linear_2001_461)"
+                      />
+                      <path
+                        d="M131.252 7.25H159.252C160.356 7.25 161.252 8.14543 161.252 9.25V48C161.252 49.6569 159.908 51 158.252 51H131.252V7.25Z"
+                        fill="#0080CD"
+                      />
+                      <rect
+                        x="126.251"
+                        y="16"
+                        width="5"
+                        height="26.25"
+                        fill="#0BA8FF"
+                      />
+                      <path
+                        d="M138.751 16H140.626C147.875 16 153.751 21.8763 153.751 29.125C153.751 36.3738 147.875 42.25 140.626 42.25H138.751V16Z"
+                        fill="#212121"
+                      />
+                      <mask
+                        id="mask0_2001_461"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="138"
+                        y="16"
+                        width="16"
+                        height="27"
+                      >
+                        <path
+                          d="M138.749 16H140.624C147.873 16 153.749 21.8762 153.749 29.125C153.749 36.3737 147.873 42.25 140.624 42.25H138.749V16Z"
+                          fill="#212121"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_2001_461)">
+                        <rect
+                          opacity="0.5"
+                          x="136.25"
+                          y="27.7171"
+                          width="17.5"
+                          height="3.75"
+                          transform="rotate(-22.5717 136.25 27.7171)"
+                          fill="#D9D9D9"
+                        />
+                        <rect
+                          opacity="0.5"
+                          x="136.25"
+                          y="33.9671"
+                          width="20.9108"
+                          height="3.75"
+                          transform="rotate(-22.5717 136.25 33.9671)"
+                          fill="#D9D9D9"
+                        />
+                      </g>
+                      <rect
+                        x="160"
+                        y="16"
+                        width="1.25"
+                        height="7.5"
+                        rx="0.625"
+                        fill="#FEFD01"
+                      />
+                      <rect
+                        x="160"
+                        y="34.75"
+                        width="1.25"
+                        height="7.5"
+                        rx="0.625"
+                        fill="#FEFD01"
+                      />
+                      <rect y="7" width="1.25" height="18.75" fill="#D9D9D9" />
+                      <rect y="32" width="1.25" height="18.75" fill="#D9D9D9" />
+                      <path
+                        d="M161 16.5L188 0V32L161 23V16.5Z"
+                        fill="url(#paint1_linear_2001_461)"
+                      />
+                      <path
+                        d="M161 35.5L188 19V51L161 42V35.5Z"
+                        fill="url(#paint2_linear_2001_461)"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="paint0_linear_2001_461"
+                          x1="63.125"
+                          y1="1"
+                          x2="63.125"
+                          y2="56"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#FDFFFF" />
+                          <stop offset="1" stop-color="#B3B3B3" />
+                        </linearGradient>
+                        <linearGradient
+                          id="paint1_linear_2001_461"
+                          x1="145.045"
+                          y1="32"
+                          x2="186.773"
+                          y2="32"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#FEFD01" />
+                          <stop
+                            offset="1"
+                            stop-color="#FEFD01"
+                            stop-opacity="0"
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="paint2_linear_2001_461"
+                          x1="145.045"
+                          y1="51"
+                          x2="186.773"
+                          y2="51"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#FEFD01" />
+                          <stop
+                            offset="1"
+                            stop-color="#FEFD01"
+                            stop-opacity="0"
+                          />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </div>
-                </div>
-                <div class="interactive-right">
-                    <div class="interactive-text">Checkout</div>
-                </div>
-              </a>
+                  <div class="lines">
+                    <svg
+                      width="345"
+                      height="2"
+                      viewBox="0 0 345 2"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <line
+                        y1="1"
+                        x2="345"
+                        y2="1"
+                        stroke="white"
+                        stroke-width="2"
+                        stroke-dasharray="6 6"
+                      />
+                    </svg>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -432,43 +793,79 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    
+    
     <script>
-      $(document).on("click", ".btn-remove", function () {
-        const productId = $(this).data("product-id"); // Fetch product ID
-        const removeFromCartURL = "/remove_from_cart/" + productId + "/"; // Ensure the URL matches Django routing
-        const button = $(this);
-
-        $.ajax({
-          url: removeFromCartURL,
-          method: "GET",
-          success: function (response) {
-            console.log("Response:", response); // Log for debugging
-
-            // Update the cart count in the navbar
-            $("#cart-link").text("Cart (" + response.cart_item_count + ")");
-
-            // Update the item's quantity in the UI
-            const quantityElement = button
-              .closest(".cart-item")
-              .find(".quantity-value");
-            const newQuantity = response.updated_quantity;
-
-            if (newQuantity > 0) {
-              quantityElement.text("Quantity: " + newQuantity);
-            } else {
-              // Remove the item row from the DOM if quantity is 0 (item deleted)
-              button.closest(".cart-item").remove();
-            }
-
-            // Update total price
-            $(".total-price").text("₹" + response.total_price);
-          },
-          error: function (xhr, status, error) {
-            console.error("Error:", xhr.responseText); // Log detailed error
-            alert("An error occurred. Please try again.");
-          },
-        });
+      // Add to cart functionality (+ button)
+      $(document).on("click", ".add_to_cart", function () {
+          const productId = $(this).data("product-id");
+          const addToCartUrl = "/add_to_cart/" + productId + "/";
+  
+          $.ajax({
+              url: addToCartUrl,
+              method: "GET",
+              success: function (response) {
+                  // Update the cart count in the navbar
+                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+  
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                  if (quantityDiv.length) {
+                      quantityDiv.text(response.updated_quantity);
+                      $("#subtotal").text("Subtotal: ₹" + response.total_price);
+                      $("#shipping").text("Shipping: ₹" + response.shipping);
+                      $("#total").text("Grand Total: ₹" + response.total);
+                  }
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
+          });
       });
+  
+      // Remove from cart functionality (- button)
+      $(document).on("click", ".remove_from_cart", function () {
+          const productId = $(this).data("product-id");
+          const removeFromCartUrl = "/remove_from_cart/" + productId + "/";
+  
+          $.ajax({
+              url: removeFromCartUrl,
+              method: "GET",
+              success: function (response) {
+                  // Update the cart count in the navbar
+                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+  
+                  // Update the product quantity on the card
+                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                  if (quantityDiv.length) {
+                      quantityDiv.text(response.updated_quantity);
+                      $("#subtotal").text("Subtotal: ₹" + response.total_price);
+                      $("#shipping").text("Shipping: ₹" + response.shipping);
+                      $("#total").text("Grand Total: ₹" + response.total);
+                  }
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
+              },
+          });
+      });
+      
+      //running the animation of place order button
+      document.querySelector(".order").addEventListener("click", function () {
+        var button = this;
+
+        // Trigger the animation
+        button.classList.add("animate");
+
+        // Wait for the animation to complete before redirecting
+        setTimeout(function () {
+          // Redirect to /checkout/
+          window.location.href = "/payments/";
+        }, 4500); // 1000ms = 1 second (matching the duration of the fadeIn animation)
+      });
+
+
     </script>
   </body>
 </html>
