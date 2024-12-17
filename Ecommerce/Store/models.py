@@ -125,11 +125,15 @@ class Order(models.Model):
     #     ('Cancelled', 'Cancelled'),
     # ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Associated with a user
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)  # Associated with a cart
-    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)  # ForeignKey to Address
-    # payment_status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
-    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    order_number = models.CharField(max_length=255)
+    order_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20)
+
 
     def __str__(self):
         return f"Order {self.id} for {self.user.username}"

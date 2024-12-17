@@ -436,27 +436,32 @@
 
 
           <!-- Heading for Existing Addresses -->
-          <div class=" mt-4 bg-white rounded-[26px] p-4 border border-black">
-            <h3 class="text-black font-extrabold text-2xl text-center">Existing Addresses</h3>
-            <ul>
-                {% for address in addresses %}
-                  <li class="mb-2">
-                    <label>
-                      <input
-                        type="radio"
-                        name="selected_address"
-                        value="{{ address.id }}"
-                        class="mr-2"
-                        required
-                      />
-                      {{ address.address }}, {{ address.city }} - {{ address.zip_code }}, {{ address.country }}
-                    </label>
-                  </li>
-              {% empty %}
-                <p>No addresses available.</p>
-              {% endfor %}
-            </ul>
-          </div>
+          <form method="POST" id="address-form">
+            {% csrf_token %}
+            <div class="mt-4 bg-white rounded-[26px] p-4 border border-black">
+                <h3 class="text-black font-extrabold text-2xl text-center">Existing Addresses</h3>
+                <ul>
+                    {% for address in addresses %}
+                        <li class="mb-2">
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="shipping_address"
+                                    value="{{ address.id }}"
+                                    {% if selected_address and address.id == selected_address.id %}checked{% endif %}
+                                    class="mr-2"
+                                    required
+                                    onchange="updateShippingAddress(this)"  <!-- Call updateShippingAddress with the radio button as 'this' -->
+                                />
+                                {{ address.address }}, {{ address.city }} - {{ address.zip_code }}, {{ address.country }}
+                            </label>
+                        </li>
+                    {% empty %}
+                        <p>No addresses available.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        </form>
 
 
 
@@ -864,6 +869,43 @@
           window.location.href = "/payments/";
         }, 4500); // 1000ms = 1 second (matching the duration of the fadeIn animation)
       });
+
+      $(document).ready(function() {
+          // Delegate the change event to radio buttons with name "address"
+          $(document).on('change', 'input[name="address"]', function(event) {
+              updateShippingAddress(event);
+          });
+      });
+
+     function updateShippingAddress(selectedRadioButton) {
+          // Log the selected radio button
+          console.log("Radio button selected:", selectedRadioButton);
+
+          // Get the value of the selected radio button (address ID)
+          var selectedAddress = selectedRadioButton.value;
+          
+          console.log("Selected Address ID:", selectedAddress);  // Verify if the address ID is being captured correctly
+          
+          // Send the selected address to the backend via Ajax
+          $.ajax({
+              type: "POST",
+              url: "{% url 'place_order' %}",  // URL for your backend view
+              data: {
+                  'shipping_address': selectedAddress,
+                  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+              },
+              success: function(response) {
+                  if (response.success) {
+                      console.log("Shipping address updated.");
+                  } else {
+                      console.log("Error: " + response.message);
+                  }
+              },
+              error: function(response) {
+                  console.log('Error with Ajax request:', response);
+              }
+          });
+      }
 
 
     </script>

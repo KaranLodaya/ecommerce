@@ -7,6 +7,11 @@ from .forms import AddressForm
 from django.contrib import messages  
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _  
+from django.core.exceptions import ObjectDoesNotExist  # Add this import
+from django.db import IntegrityError, DatabaseError  # Add this import
+from django.utils import timezone
+from django.utils.crypto import get_random_string  # Add this import
+
 
 
 # View for listing products
@@ -285,58 +290,37 @@ def payments(request):
 
 
 
-# View to place an order
 @login_required
 def place_order(request):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_items = cart.items.all()
-
-    # Calculate total quantity and total price
-    cart_item_count = sum(item.quantity for item in cart_items)
-    total_price = sum(item.product.price * item.quantity for item in cart_items)
-    shipping = Decimal("0.002") * total_price
-    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    total = total_price + shipping
-
-    # Handle normal POST request for placing the order
     if request.method == "POST":
-        shipping_address_id = request.POST.get("shipping_address", "")
+        shipping_address_id = request.POST.get('shipping_address')
+        
+        # Get the shipping address using the provided ID
+        shipping_address = get_object_or_404(Address, id=shipping_address_id)
 
-        # Check if the user provided a valid shipping address
-        if not shipping_address_id:
-            return JsonResponse(
-                {"success": False, "message": "Shipping address is required."}
-            )
+        # Assuming the subtotal and shipping fees are calculated dynamically
+        subtotal = Decimal(request.POST.get('subtotal', 0))  # Example, replace with actual logic
+        shipping_fee = Decimal(request.POST.get('shipping', 0))  # Example, replace with actual logic
+        total = subtotal + shipping_fee
 
-        # Ensure the address is valid and belongs to the logged-in user
-        shipping_address = get_object_or_404(Address, id=shipping_address_id, user=request.user)
+        # Generate an order number (optional logic)
+        order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
 
-        # Create the order and associate it with the selected shipping address
+        # Create the order
         order = Order.objects.create(
-            user=request.user, cart=cart, shipping_address=shipping_address
+            user=request.user,
+            shipping_address=shipping_address,
+            subtotal=subtotal,
+            shipping=shipping_fee,
+            total=total,
+            order_number=order_number,
+            status='pending'  # Example status
         )
 
-        # Empty the cart and recalculate the total
-        cart.items.all().delete()
-        cart.calculate_total()
+        # Return success response
+        return JsonResponse({"success": True, "message": "Order placed successfully."})
 
-        return redirect("order_confirmation", order_id=order.id)
-
-    # Render the checkout page for initial load
-    return render(
-        request,
-        "store/checkout.html",
-        {
-            "cart": cart,
-            "cart_items": cart_items,
-            "cart_item_count": cart_item_count,
-            "total_price": total_price,
-            "shipping": shipping,
-            "total": total,
-        },
-    )
-
-
+    return JsonResponse({"success": False, "message": "Invalid request."})
 
 
 
