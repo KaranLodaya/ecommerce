@@ -295,15 +295,21 @@ def place_order(request):
     if request.method == "POST":
         shipping_address_id = request.POST.get('shipping_address')
         
-        # Get the shipping address using the provided ID
+        # Ensure shipping_address_id is valid
+        if not shipping_address_id:
+            return JsonResponse({"success": False, "message": "Shipping address is required."})
+
         shipping_address = get_object_or_404(Address, id=shipping_address_id)
 
-        # Assuming the subtotal and shipping fees are calculated dynamically
-        subtotal = Decimal(request.POST.get('subtotal', 0))  # Example, replace with actual logic
-        shipping_fee = Decimal(request.POST.get('shipping', 0))  # Example, replace with actual logic
-        total = subtotal + shipping_fee
+        # Capture the subtotal and shipping fee from the POST data
+        try:
+            subtotal = Decimal(request.POST.get('subtotal', 0))
+            shipping_fee = Decimal(request.POST.get('shipping', 0))
+            total = subtotal + shipping_fee
+        except ValueError:
+            return JsonResponse({"success": False, "message": "Invalid order total."})
 
-        # Generate an order number (optional logic)
+        # Generate the order number (optional logic)
         order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
 
         # Create the order
@@ -314,14 +320,12 @@ def place_order(request):
             shipping=shipping_fee,
             total=total,
             order_number=order_number,
-            status='pending'  # Example status
+            status='pending'
         )
 
-        # Return success response
         return JsonResponse({"success": True, "message": "Order placed successfully."})
 
     return JsonResponse({"success": False, "message": "Invalid request."})
-
 
 
 # View to confirm the order
