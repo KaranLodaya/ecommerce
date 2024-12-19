@@ -273,25 +273,25 @@
       }
 
       .order.animate .truck {
-        animation: truck 5s ease forwards;
+        animation: truck 5s ease ;
       }
 
       .order.animate .box {
-        animation: box 5s ease forwards;
+        animation: box 5s ease ;
       }
 
       .order.animate .lines {
-        animation: lines 5s ease forwards;
+        animation: lines 5s ease ;
       }
 
       .order.animate {
-        animation: truckSVG 5s ease forwards;
+        animation: truckSVG 5s ease ;
       }
 
       @keyframes truck {
         10%,
         30% {
-          transform: translateX(-164px);
+          transform: translateX(-175px);
         }
         40% {
           transform: translateX(-224px);
@@ -855,98 +855,101 @@
           });
       });
       
-      // //running the animation of place order button
-      // document.querySelector(".order").addEventListener("click", function () {
-      //   var button = this;
-
-      //   // Trigger the animation
-      //   button.classList.add("animate");
-
-      //   // Wait for the animation to complete before redirecting
-      //   setTimeout(function () {
-      //     // Redirect to /checkout/
-      //     window.location.href = "/payments/";
-      //   }, 4500); // 1000ms = 1 second (matching the duration of the fadeIn animation)
-      // });
 
 
       document.querySelector(".order").addEventListener("click", function () {
-    var button = this;
+        var button = this;
 
-    // Trigger the animation
-    button.classList.add("animate");
+        // Trigger the animation
+        button.classList.add("animate");
 
-    // Capture the selected address
-    var selectedAddress = document.querySelector('input[name="shipping_address"]:checked').value;
+        // Capture the selected address
+        var selectedAddress = document.querySelector('input[name="shipping_address"]:checked').value;
 
-    // Prepare the data to send via Ajax
-    var subtotal = document.querySelector('#subtotal').value;  // Get the subtotal (ensure this element exists)
-    var shippingFee = document.querySelector('#shipping').value;  // Get the shipping fee (ensure this element exists)
+        // Extract numeric values from the <p> elements
+        var subtotalText = document.querySelector('#subtotal').textContent;
+        var shippingText = document.querySelector('#shipping').textContent;
 
-    // Send the selected address and other data to the backend via Ajax
-    $.ajax({
-        type: "POST",
-        url: "{% url 'place_order' %}",
-        data: {
-            'shipping_address': selectedAddress,
-            'subtotal': subtotal,
-            'shipping': shippingFee,
-            'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-        },
-        success: function(response) {
-            if (response.success) {
-                console.log("Shipping address updated and order placed.");
-                // Wait for the animation to complete before redirecting
-                setTimeout(function () {
-                    window.location.href = "/payments/";  // Redirect to the payments page
-                }, 4500);  // Duration matching the animation
-            } else {
-                console.log("Error placing order: " + response.message);
+        // Extract the numeric values by removing the non-numeric characters (₹ and the rest)
+        var subtotal = parseFloat(subtotalText.replace(/[^\d.-]/g, '') || 0);
+        var shipping = parseFloat(shippingText.replace(/[^\d.-]/g, '') || 0);
+
+        // Debugging: Check captured values
+        console.log("Selected Address:", selectedAddress);
+        console.log("Subtotal:", subtotal);
+        console.log("Shipping:", shipping);
+
+        // Send the selected address and other data to the backend via Ajax
+        $.ajax({
+            type: "POST",
+            url: "{% url 'place_order' %}",
+            data: {
+                'shipping_address': selectedAddress,
+                'subtotal': subtotal,
+                'shipping': shipping,
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function(response) {
+                if (response.success) {
+                    console.log("Shipping address updated and order placed.");
+                    // Wait for the animation to complete before redirecting
+                    setTimeout(function () {
+                      window.location.href = "/payments/" + response.order_id + "/";  // Redirect to the payments page with the order_id
+                    }, 4500);  // Duration matching the animation
+                } else {
+                    console.log("Error placing order: " + response.message);
+                }
+            },
+            error: function(response) {
+                console.log('Error with Ajax request:', response);
+                button.classList.remove("animate"); // Remove the animation class on failure
             }
-        },
-        error: function(response) {
-            console.log('Error with Ajax request:', response);
-        }
-    });
-});
+        });
+      });
 
 
-    //   $(document).ready(function() {
-    //       // Delegate the change event to radio buttons with name "address"
-    //       $(document).on('change', 'input[name="address"]', function(event) {
-    //           updateShippingAddress(event);
-    //       });
-    //   });
 
-    //  function updateShippingAddress(selectedRadioButton) {
-    //       // Log the selected radio button
-    //       console.log("Radio button selected:", selectedRadioButton);
 
-    //       // Get the value of the selected radio button (address ID)
-    //       var selectedAddress = selectedRadioButton.value;
+
+      $(document).ready(function() {
+        // Delegate the change event to radio buttons with name "address"
+        $(document).on('change', 'input[name="shipping_address"]', function(event) {
+          updateShippingAddress(event.target);
+       });
+      });
+
+      // Function to handle the address change and send to the backend
+      function updateShippingAddress(selectedRadioButton) {
+          // Get the value of the selected radio button (address ID)
+          var selectedAddress = selectedRadioButton.value;
           
-    //       console.log("Selected Address ID:", selectedAddress);  // Verify if the address ID is being captured correctly
-          
-    //       // Send the selected address to the backend via Ajax
-    //       $.ajax({
-    //           type: "POST",
-    //           url: "{% url 'place_order' %}",  // URL for your backend view
-    //           data: {
-    //               'shipping_address': selectedAddress,
-    //               'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-    //           },
-    //           success: function(response) {
-    //               if (response.success) {
-    //                   console.log("Shipping address updated.");
-    //               } else {
-    //                   console.log("Error: " + response.message);
-    //               }
-    //           },
-    //           error: function(response) {
-    //               console.log('Error with Ajax request:', response);
-    //           }
-    //       });
-    //   }
+          console.log("Selected Address ID:", selectedAddress);  // Verify if the address ID is being captured correctly
+
+          // Send the selected address to the backend via Ajax
+          $.ajax({
+              type: "POST",
+              url: "{% url 'cart_view' %}",  // URL for your backend view
+              data: {
+                  'address_id': selectedAddress,  // Sending the address ID to the backend
+                  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),  // CSRF token
+              },
+              success: function(response) {
+                console.log(response);
+                  if (response.shipping && response.total) {
+                      // Update the shipping fee and total in the cart page
+                      $('#shipping').text("Shipping: ₹" + response.shipping);
+                      $('#total').text("Grand Total: ₹" +response.total);
+                      console.log("Shipping address and totals updated.");
+                  } else {
+                      console.log("Error: " + response.message);
+                  }
+              },
+              error: function(xhr, errmsg, err) {
+                  console.log('Error with Ajax request:', errmsg);
+              }
+          });
+      }
+
 
 
     </script>

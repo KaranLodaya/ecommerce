@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body>
+    <h1>Order Confirmation</h1>
+    <p>Thank you for your order, {{ order.user }}!</p>
+    <p>Your order number is: <strong>{{ order.order_number }}</strong></p>
+    
+    <h3>Order Details:</h3>
+    <ul>
+        {% for item in cart.items.all %}
+            <li>{{ item.product.name }} Qt.{{ item.quantity }} </li>
+        {% endfor %}
+    </ul>
+    <p>Subtotal: ₹{{ order.subtotal }}</p>
+    <p>Shipping fees: ₹{{order.shipping}}</p>
+    <p>Your products will be delivered to {{ order.shipping_address }}</p></n>
+    <p><strong>Grand Total: ₹{{ order.total }}</strong></p>
+    <p>You will receive further updates on your order soon.</p>
+</body>
+</html>

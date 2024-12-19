@@ -29,7 +29,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-
+    is_ordered = models.BooleanField(default=False)
     def calculate_total(self):
         # """Recalculate the total price based on the cart items, including shipping."""
         # Start with the total price of all items in the cart
@@ -107,7 +107,7 @@ class Address(models.Model):
     is_shipping = models.BooleanField(default=False)
     
     def __str__(self):
-        return f"{self.user}, {self.address}, {self.city}, {self.state}, {self.zip_code}, {self.country}"
+        return f" {self.address}, {self.city}, {self.state}, {self.zip_code}, {self.country}"
 
 
 
@@ -119,21 +119,27 @@ class payment(models.Model):
     
 
 class Order(models.Model):
-    # STATUS_CHOICES = [
-    #     ('Pending', 'Pending'),
-    #     ('Completed', 'Completed'),
-    #     ('Cancelled', 'Cancelled'),
-    # ]
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    order_number = models.CharField(max_length=255)
+    order_number = models.CharField(max_length=255, unique=True)
     order_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20)
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"Order {self.id} for {self.user.username}"
+        return f"Order {self.order_number} for {self.user.username}"
