@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Label Address Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <nav class="bg-white shadow-md py-4 px-6">
+        <div class="container mx-auto flex items-center justify-between space-x-4 ">
+            <!-- Logo -->
+            <a href="/products" class="text-2xl font-bold text-blue-500">UrbanCart</a>
+
+            <!-- Search Bar (visible on large screens) -->
+            <div class="hidden md:block w-full max-w-lg mx-4">
+                <input type="text" placeholder="Search..." class="w-full px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Links (visible on larger screens) -->
+            <div class="hidden md:flex items-center space-x-4 whitespace-nowrap ">
+                <a href="/products" class=" hover:text-blue-500 hover:bg-gray-100 px-1 py-2 rounded-lg ">Home</a>
+                <a href="/categories" class="hover:text-blue-500 hover:bg-gray-100 px-1 py-2 rounded-lg">Categories</a>
+                <a href="/deals" class="hover:text-blue-500 hover:bg-gray-100 px-1 py-2 rounded-lg">Deals</a>
+                <a href="/contact" class="hover:text-blue-500 hover:bg-gray-100 px-1 py-2 rounded-lg">Contact Us</a>
+            </div>
+            
+            <!-- Login and Cart -->
+            <div class="flex items-center space-x-5">
+                
+                <!-- Search Icon (small screens, moved next to login) -->
+                <div class="md:hidden flex items-center">
+                    <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600">
+                        <path d="M18.9677 33.9353C22.716 33.9353 26.134 32.5476 28.7597 30.2714L42.4883 44L44 42.4883L30.2714 28.7597C32.5476 26.134 33.9353 22.716 33.9353 18.9677C33.9353 10.7012 27.2341 4 18.9677 4C10.7012 4 4 10.7012 4 18.9677C4 27.2341 10.7012 33.9353 18.9677 33.9353ZM18.9677 6.13824C26.042 6.13824 31.7971 11.8933 31.7971 18.9677C31.7971 26.042 26.042 31.7971 18.9677 31.7971C11.8933 31.7971 6.13824 26.042 6.13824 18.9677C6.13824 11.8933 11.8933 6.13824 18.9677 6.13824Z" fill="black"/>
+                    </svg>
+                </div>
+
+                <div class="relative">
+                    <a href="/cart" class="hover:text-blue-500">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600">
+                            <path d="M37.721 30L43.388 13H12.721L10.721 7H5V9H9.279L15.928 28.948L11.461 39H39V37H14.539L17.65 30H37.721ZM40.612 15L36.279 28H17.721L13.388 15H40.612Z" fill="black"/>
+                            <path d="M20 44C21.1046 44 22 43.1046 22 42C22 40.8954 21.1046 40 20 40C18.8954 40 18 40.8954 18 42C18 43.1046 18.8954 44 20 44Z" fill="black"/>
+                            <path d="M32 44C33.1046 44 34 43.1046 34 42C34 40.8954 33.1046 40 32 40C30.8954 40 30 40.8954 30 42C30 43.1046 30.8954 44 32 44Z" fill="black"/>
+                        </svg>
+                        <span class="absolute bottom-3 left-3 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-blue-500 rounded-full">{{cart_item_count}}</span>
+                    </a>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <!-- Show profile icon-->
+                    <div class="relative">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600">
+                                <path d="M29.089 24.747C32.6 22.909 35 19.238 35 15C35 8.925 30.075 4 24 4C17.925 4 13 8.925 13 15C13 19.238 15.4 22.909 18.911 24.747C10.89 27.09 5 34.809 5 44H43C43 34.809 37.11 27.09 29.089 24.747ZM15 15C15 10.037 19.037 6 24 6C28.963 6 33 10.037 33 15C33 19.963 28.963 24 24 24C19.037 24 15 19.963 15 15ZM24 26C32.735 26 39.953 33.013 40.896 42H7.104C8.047 33.013 15.265 26 24 26Z" fill="black"/>
+                            </svg>
+                        </button>
+                    
+                        <!-- Dropdown menu -->
+                        <div id="dropdownMenu" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 hidden">
+                            <div class="p-3 space-y-2 text-left">
+                                <!-- <span class="block text-gray-700 px-4 py-2">{{user.email}}</span> -->
+                                <span class="block text-gray-700 px-4 py-2">karan@gmail.com</span>
+                                <a href="{% url 'order_history' %}" class="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg">Order History</a><hr>
+                                <a href="{% url 'logout' %}" class="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    Show Login button
+                    <a href="/login" class="hover:text-blue-500">Login</a>
+                {% endif %}
+
+                <!-- Custom Cart Icon -->
+                <!-- Hamburger for mobile -->
+                <button class="md:hidden flex items-center">
+                    <!-- Hamburger Icon using Tailwind CSS -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Function to toggle the dropdown visibility
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('hidden');
+        }
+    
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = event.target.closest('button');
+            if (!button) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+  

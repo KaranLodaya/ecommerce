@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - {{ order.order_number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ08v3K6a6kE5qF6xL0N0YcdNTKysF8zY5c/NemG59jv5n5RfYAA0Z9kPY3A" crossorigin="anonymous">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+        .order-header {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="order-header">
+            <h1>Order Details - {{ order.order_number }}</h1>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+            <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+            <p><strong>Subtotal:</strong> ${{ order.subtotal|floatformat:2 }}</p>
+            <p><strong>Shipping:</strong> ${{ order.shipping|floatformat:2 }}</p>
+            <p><strong>Total:</strong> ${{ order.total|floatformat:2 }}</p>
+        </div>
+
+        <h2>Items in This Order</h2>
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price|floatformat:2 }}</td>
+                        <td>${{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/order_history/" class="btn btn-primary mt-3">Back to Order History</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybP9z4HrtTdZCXX4ncpr4bOweXj4PZ/1p6w38g6t99gJpX27T2" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0p6T5Ftr5BaPtUQXyLl+YjIEcx9FvM9zUgaLwSrXmOdQtBfm" crossorigin="anonymous"></script>
+</body>
+</html>

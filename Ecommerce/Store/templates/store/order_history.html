@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ08v3K6a6kE5qF6xL0N0YcdNTKysF8zY5c/NemG59jv5n5RfYAA0Z9kPY3A" crossorigin="anonymous">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Order History</h1>
+
+        {% if orders %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Order Date</th>  <!-- Order date of completion -->
+                        <th>Total Amount</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in completed_orders %}
+                        <tr>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.order_date }}</td>  <!-- Display the order_date -->
+                            <td>{{ order.total }}</td>
+                            <td><a href="{% url 'order_detail' order.id %}">View Details</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No completed orders found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                You have no past orders.
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybP9z4HrtTdZCXX4ncpr4bOweXj4PZ/1p6w38g6t99gJpX27T2" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0p6T5Ftr5BaPtUQXyLl+YjIEcx9FvM9zUgaLwSrXmOdQtBfm" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -4,26 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product List</title>
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
-        background-color: #f8f9fa;
+        background-color: whitesmoke;
+      }
+
+      .cart-header {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 20px;
       }
 
       .card {
-        display: flex;
+        display:flex;
         flex-direction: column;
-        justify-content: space-between;
-        height: 100%; /* Ensure the card fills its parent container */
-        margin: 15px 0;
-        padding: 20px;
-        background: #323232;
-        border-radius: 20px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 26px;
+        margin: 15px;
+        padding: 15px;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       .card__wrapper {
@@ -33,14 +33,11 @@
       }
 
       .card__img {
-        width: 250px; /* Adjust to your desired size */
-        height: 250px; /* Same as width for a square aspect ratio */
-        border-radius: 50%; /* Makes the image circular */
-        overflow: hidden; /* Ensures any overflow is hidden */
-        display: flex;
-        justify-content: center; /* Centers the image horizontally */
-        align-items: center; /* Centers the image vertically */
-        margin: 0 auto; /* Ensures the card stays centered within its container */
+        width: 100%; /* Ensures the image fills the container */
+        max-width: 100px; /* Set a maximum size */
+        aspect-ratio: 3/4; /*Maintain the 3:4 ratio */
+        object-fit: cover; /* Ensures the image scales properly without distortion */
+        border-radius: 10px; /* Optional for rounded corners */
       }
 
       .product-img {
@@ -73,17 +70,15 @@
         display: flex;
         align-items: center;
         justify-content: space-evenly;
-        gap: 10px;
-        background: #666;
         padding: 5px;
-        border-radius: 50px;
+        border-radius: 26px;
       }
 
       .card__counter-score,
       .card__btn {
         font-weight: 600;
         font-size: 30px;
-        color: #fff;
+        color: #000000;
         display: flex; /* Enables flexbox */
         justify-content: space-between;
       }
@@ -91,12 +86,6 @@
       .card__btn {
         font-weight: 600;
         font-size: 25px;
-        color: #fff;
-        background: transparent;
-        border: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
         display: flex;
         justify-content: space-evenly;
         align-items: center;
@@ -107,13 +96,9 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
       }
 
-      .navbar-brand {
-        font-weight: bold;
-      }
-
       .footer {
         margin-top: 50px;
-        background-color: #343a40;
+        background-color: rgb(50, 50, 50);
         color: white;
         padding: 20px 0;
         text-align: center;
@@ -128,115 +113,49 @@
     </style>
   </head>
   <body>
+    
     <!-- Navigation Bar -->
-    {% load static %}
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'product_list' %}">UrbanCart</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="{% url 'product_list' %}"
-                >Home</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'cart_view' %}" id="cart-link">Cart ({{cart_item_count}})</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'contact' %}">Contact</a>
-            </li>
-
-            <!-- Profile Icon with Dropdown -->
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <img
-                  src="{% static 'store/user-2.png' %}"
-                  alt="Profile"
-                  class="rounded-circle"
-                  style="width: 30px; height: 30px; background-color: #fff;"
-                />
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li>
-                  <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    {% include 'Store/navbar.html' %}
+    
 
     <!-- Main Content -->
-    <div class="container mt-4">
-      <h1 class="text-center">Our Products</h1>
-      <div class="row">
+    <div class="mt-4">
+      <h1 class="text-center text-2xl font-bold mb-8">Our Products</h1>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
         {% for product in products %}
-        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
-          <div class="card" data-href="{% url 'product_detail' product.id %}">
-            <div class="card__img">
-              {% if product.image %}
-              <img
-                src="{{ product.image.url }}"
-                alt="{{ product.name }}"
-                class="product-img"
-              />
-              {% else %}
-              <svg
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="#303c42"
-                  d="m23.8535156 1.6464844-1.5-1.5c-.1953125-.1953125-.5117188-.1953125-.7070312 0l-1.9173584 1.9173584c-.1885986-.098999-.4240723-.0759277-.5826416.0826416l-3.7880859 3.7880859c-1.9462891-.5317383-4.0078125.0078125-5.4482422 1.4477539l-9.0566406 9.0571289c-.5507813.5498047-.8535157 1.2817383-.8535157 2.0605469s.3027344 1.5107422.8535156 2.0605469l2.5859375 2.5859375c.5507813.5502929 1.2832031.8535156 2.0605469.8535156s1.5097656-.3032227 2.0605469-.8535156l9.0566406-9.0571289c1.4404297-1.4394531 1.9814453-3.5014648 1.4482422-5.4477539l3.7880859-3.7880859c.1585693-.1585693.1816406-.394043.0826416-.5826416l1.9173584-1.9173584c.1953125-.1953126.1953125-.5117188 0-.7070313z"
-                ></path>
-              </svg>
-              {% endif %}
-            </div>
-            <div class="card__content">
-              <div class="card__title">{{ product.name }}</div>
-              <div class="card__subtitle">{{ product.description }}</div>
-              <div class="card__price">₹{{ product.price }}</div>
-              <div class="card__counter">
-                <button class="card__btn remove_from_cart" data-product-id="{{ product.id }}" {% if product.quantity_in_cart == 0 %}disabled{% endif %}> - </button>
-                <div class="card__counter-score" data-product-id="{{ product.id }}">{{ product.quantity_in_cart }}</div>
-                <button class="card__btn add_to_cart" data-product-id="{{ product.id }}">+</button>
-              </div>
-            </div>
+        <div class="card p-4 flex flex-col" data-href="{% url 'product_detail' product.id %}">
+          <!-- Image section with consistent size -->
+          <div class="relative overflow-hidden w-full h-2/3  p-2">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-cover w-full h-full rounded-[20px]" />
+          </div>
+
+          <hr>
+        
+          <!-- Content section with equal height distribution -->
+          <div class="flex flex-col justify-around flex-1 p-2">
+            <div class="font-semibold text-2xl">{{ product.name }}</div>
+            <div class="text-sm text-gray-600">{{ product.description }}</div>
+            <div class="font-bold text-xl mt-3">₹{{ product.price }}</div>
+          </div>
+
+          <hr>
+          <!-- Counter and buttons -->
+          <div class="flex items-center justify-around mt-4 bg-gray-100 rounded-[20px] ">
+            <button class="card__btn remove_from_cart px-4 py-2   rounded-full hover:bg-gray-200 transition" data-product-id="{{ product.id }}" {% if product.quantity_in_cart == 0 %}disabled{% endif %}>-</button>
+            <div class="card__counter-score text-xl" data-product-id="{{ product.id }}">{{ product.quantity_in_cart }}</div>
+            <button class="card__btn add_to_cart px-4 py-2   rounded-full hover:bg-gray-200 transition" data-product-id="{{ product.id }}">+</button>
           </div>
         </div>
+        
         {% endfor %}
       </div>
     </div>
+    
 
     <!-- Footer -->
     <div class="footer">
       <p>&copy; 2024 UrbanCart. All rights reserved.</p>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- jQuery (necessary for AJAX) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

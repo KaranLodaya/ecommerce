@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
-from .models import Category, Product, Cart, CartItem, Address, payment, Order
+from django.http import HttpResponseBadRequest, JsonResponse
+from .models import Category, Product,Review, Cart, CartItem, Address, payment, Order, OrderItem
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal, ROUND_HALF_UP
-from .forms import AddressForm
+from .forms import AddressForm, ReviewForm
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -13,8 +13,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string  # Add this import
 from django.core.mail import send_mail
 from django.conf import settings
-
-# import stripe
+import stripe
 
 
 # View for listing products
@@ -65,6 +64,7 @@ def product_list_by_category(request, category_id=None):
 # View for product details
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    reviews = product.reviews.all()  # Fetch all reviews related to the product
 
     if request.user.is_authenticated:
         # Get or create a cart for the logged-in user
@@ -73,6 +73,19 @@ def product_detail(request, product_id):
         cart = {item.product.id: item.quantity for item in cart_obj.items.all()}
         # Calculate the total quantity of items in the cart
         cart_item_count = sum(cart.values())
+    else:
+        cart_item_count = 0  # If user is not logged in, set cart item count to 0
+
+    if request.method == 'POST' and request.user.is_authenticated:
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            return redirect('product_detail', product_id=product.id)
+    else:
+        form = ReviewForm()  # Initialize the form for GET request
 
     return render(
         request,
@@ -80,10 +93,31 @@ def product_detail(request, product_id):
         {
             "product": product,
             "cart_item_count": cart_item_count,
-        },
+            "reviews": reviews,
+            "form": form,
+        }
     )
 
 
+
+def calculate_cart_totals(cart):
+    """
+    Helper function to calculate the total price, shipping, and item count in the cart.
+    Returns a dictionary with updated total price, shipping, total, and item count.
+    """
+    subtotal = sum(item.product.price * item.quantity for item in cart.items.all())
+    shipping = Decimal("0.002") * subtotal  # Modify if you have more complex shipping logic
+    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    total = subtotal + shipping
+    cart_item_count = sum(item.quantity for item in cart.items.all())
+    
+    return {
+        "subtotal": subtotal,
+        "shipping": shipping,
+        "total": total,
+        "cart_item_count": cart_item_count
+    }
+    
 # View to add an item to the cart
 @login_required
 def add_to_cart(request, product_id):
@@ -93,36 +127,25 @@ def add_to_cart(request, product_id):
     # Find the cart item
     cart_item = cart.items.filter(product=product).first()
 
-    # import pdb;pdb.set_trace()
     if cart_item:
         cart_item.quantity += 1
         cart_item.save()
     else:
-        cart_item = CartItem.objects.create(
-            cart=cart, product=product, quantity=1
-        )  # Add new item to the cart if it's not already present
+        cart_item = CartItem.objects.create(cart=cart, product=product, quantity=1)
 
     updated_quantity = cart_item.quantity
 
     # Calculate updated cart details
-    total_price = sum(item.product.price * item.quantity for item in cart.items.all())
-    shipping = Decimal("0.002") * total_price
-    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    total = total_price + shipping
-    cart_item_count = sum(
-        item.quantity for item in cart.items.all()
-    )  # Updated to reflect total quantity
+    cart_totals = calculate_cart_totals(cart)
 
     # Return updated response
-    return JsonResponse(
-        {
-            "updated_quantity": updated_quantity,
-            "total_price": total_price,
-            "cart_item_count": cart_item_count,
-            "shipping": shipping,
-            "total": total,
-        }
-    )
+    return JsonResponse({
+        "updated_quantity": updated_quantity,
+        "cart_item_count": cart_totals["cart_item_count"],
+        "subtotal": cart_totals["subtotal"],
+        "shipping": cart_totals["shipping"],
+        "total": cart_totals["total"]
+    })
 
 
 @login_required
@@ -134,36 +157,27 @@ def remove_from_cart(request, product_id):
     cart_item = cart.items.filter(product=product).first()
 
     if cart_item:
-        # Decrement quantity or remove the item if it reaches 0
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
             cart_item.save()
             updated_quantity = cart_item.quantity
         else:
             cart_item.delete()
-            updated_quantity = 0  # Set quantity to 0 since item is deleted
+            updated_quantity = 0
     else:
         updated_quantity = 0
 
     # Calculate updated cart details
-    total_price = sum(item.product.price * item.quantity for item in cart.items.all())
-    shipping = Decimal("0.002") * total_price
-    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    total = total_price + shipping
-    cart_item_count = sum(
-        item.quantity for item in cart.items.all()
-    )  # Updated to reflect total quantity
+    cart_totals = calculate_cart_totals(cart)
 
     # Return updated response
-    return JsonResponse(
-        {
-            "updated_quantity": updated_quantity,
-            "total_price": total_price,
-            "cart_item_count": cart_item_count,
-            "shipping": shipping,
-            "total": total,
-        }
-    )
+    return JsonResponse({
+        "updated_quantity": updated_quantity,
+        "cart_item_count": cart_totals["cart_item_count"],
+        "subtotal": cart_totals["subtotal"],
+        "shipping": cart_totals["shipping"],
+        "total": cart_totals["total"]
+    })
 
 
 state_shipping_fees = {
@@ -263,7 +277,7 @@ def cart_view(request):
             "cart": cart,
             "cart_items": cart_items,
             "cart_item_count": cart_item_count,
-            "total_price": subtotal,
+            "subtotal": subtotal,
             "shipping": shipping,  # Default to 0 for non-AJAX requests
             "total": total,
             "addresses": addresses,
@@ -339,9 +353,7 @@ def address(request):
             order.save()
 
         # After saving, stay on the cart page (no redirection to payments yet)
-        return redirect(
-            "cart_view"
-        )  # Keep user on the cart page to review the cart and address
+        return redirect("cart_view")  # Keep user on the cart page to review the cart and address
 
     else:
         return redirect("cart_view")  # If not POST, just redirect back to the cart page
@@ -351,28 +363,48 @@ def address(request):
 def place_order(request):
     if request.method == "POST":
         shipping_address_id = request.POST.get("shipping_address")
-
+        print(shipping_address_id)
         # Ensure shipping_address_id is valid
         if not shipping_address_id:
+            print("12345")
             return JsonResponse(
                 {"success": False, "message": "Shipping address is required."}
             )
 
         shipping_address = get_object_or_404(Address, id=shipping_address_id)
+        print(shipping_address)
+        # Fetch the user's cart
+        cart = Cart.objects.filter(user=request.user, is_ordered=False).first()
+        print("12121")
+        # If the user doesn't have an active cart, return an error
+        if not cart:
+            print("@@@@")
+            return JsonResponse({"success": False, "message": "Your cart is empty."})
 
-        # Capture the subtotal and shipping fee from the POST data
-        try:
-            subtotal = Decimal(request.POST.get("subtotal"))
-            shipping = Decimal(request.POST.get("shipping"))
-            total = subtotal + shipping
-        except ValueError:
-            return JsonResponse({"success": False, "message": "Invalid order total."})
+        # Fetch the cart items associated with the user's cart
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        # Check if cart items exist
+        if not cart_items.exists():
+            print("####")
+            return JsonResponse({"success": False, "message": "No items in the cart."})
+
+        # Debug: Print cart item details
+        for item in cart_items:
+            print(f"Cart Item: {item.product.name}, Quantity: {item.quantity}")
+
+        # Calculate the subtotal based on the cart items
+        subtotal = sum(item.subtotal() for item in cart_items)
+
+        # Capture shipping cost (if any, for now assuming you have a fixed method for it)
+        shipping = Decimal(request.POST.get("shipping", 0))  # Default to 0 if not provided
+        total = subtotal + shipping
 
         # Check if the user has an existing unpaid order
         existing_order = Order.objects.filter(user=request.user, status="pending").first()
 
         if existing_order:
-            # Modify the existing order (cart items, shipping address, etc.)
+            # Modify the existing order (update items, shipping address, etc.)
             existing_order.shipping_address = shipping_address
             existing_order.subtotal = subtotal
             existing_order.shipping = shipping
@@ -387,10 +419,10 @@ def place_order(request):
                 }
             )
         else:
-            # Generate the order number only when creating a new order
+            # Generate order number for a new order
             order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
 
-            # Create a new order if no existing unpaid order
+            # Create the new order
             order = Order.objects.create(
                 user=request.user,
                 shipping_address=shipping_address,
@@ -400,6 +432,20 @@ def place_order(request):
                 order_number=order_number,
                 status="pending",
             )
+
+            # Create order items from the cart items
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price,
+                )
+                print(f"Order Item Created: {item.product.name}, Quantity: {item.quantity}")
+
+            # Mark the cart as ordered
+            cart.is_ordered = True
+            cart.save()
 
             return JsonResponse(
                 {
@@ -412,53 +458,64 @@ def place_order(request):
     return JsonResponse({"success": False, "message": "Invalid request."})
 
 
+
+
+
+
+
+
+
+
 @login_required
 def payments(request, order_id):
     # Fetch the order using the order_id
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
 
-    # Simulating payment success (this should be replaced with actual payment provider integration)
-    payment_success = True  # This should be set based on actual payment processing
+    # If the request is GET, render the payment page
+    if request.method == 'GET':
+        if order.payment_status == 'paid':
+            # Redirect if the payment is already completed
+            return redirect('order_confirmation', order_id=order.id)
+        # Render the payment template
+        return render(request, 'Store/payments.html', {'order': order})
 
-    if payment_success:
-        # Update order status to 'completed' when payment is successful
-        order.status = "completed"
-        order.save()
+    # If the request is POST, process the payment action
+    elif request.method == 'POST':
+        # Assume some payment logic happens here
+        if 'pay' in request.POST:  # Example: form button named 'pay'
+            # Update payment status to 'paid'
+            order.payment_status = 'paid'
+            order.save()
+            return redirect('order_confirmation', order_id=order.id)
+        elif 'cancel' in request.POST:  # Handle other actions, like cancel
+            return redirect('cart', order_id=order.id)
+        
+        # Handle invalid POST data
+        return HttpResponseBadRequest("Invalid request.")
 
-        # Redirect to order confirmation page
-        print(order_id)
-        return redirect("order_confirmation", order_id=order.id)
-    else:
-        # In case payment fails, you can handle the error here (e.g., show a failure message)
-        return render(request, "Store/cart_view.html", {"order": order})
+    # If the request method is neither GET nor POST
+    return HttpResponseBadRequest("Invalid request method.")
+    
+    # # Create Stripe Payment Intent
+    # try:
+    #     payment_intent = stripe.PaymentIntent.create(
+    #         amount=int(order.total * 100),  # Stripe expects the amount in cents
+    #         currency='usd',
+    #         metadata={'order_id': order.id}
+    #     )
 
+    #     # Save the client secret for front-end usage
+    #     order.payment_status = 'pending'
+    #     order.save()
 
-# stripe.api_key = settings.STRIPE_SECRET_KEY
+    #     return render(request, 'Store/payments.html', {
+    #         'client_secret': payment_intent.client_secret,
+    #         'order': order
+    #     })
 
-# def stripe_webhook(request):
-#     payload = request.body
-#     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-#     endpoint_secret = settings.STRIPE_ENDPOINT_SECRET
-
-#     try:
-#         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-
-#         if event['type'] == 'payment_intent.succeeded':
-#             payment_intent = event['data']['object']
-#             order_id = payment_intent['metadata']['order_id']  # Assuming the order ID is stored in metadata
-#             order = get_object_or_404(Order, id=order_id)
-
-#             # Update order status to 'completed'
-#             order.status = 'completed'
-#             order.save()
-
-#             # Send email confirmation
-#             send_confirmation_email(order)
-
-#         return JsonResponse({'status': 'success'})
-#     except Exception as e:
-#         return JsonResponse({'status': 'failed', 'error': str(e)})
-
+    # except stripe.error.StripeError as e:
+    #     messages.error(request, "There was an issue processing your payment. Please try again.")
+    #     return redirect('cart_view')  # Or handle it as you see fit
 
 # View to confirm the order
 @login_required
@@ -502,7 +559,7 @@ def send_confirmation_email(order):
     Subtotal: ₹{order.subtotal}
 
     Shipping: ₹{order.shipping}
-    
+
     Total: ₹{order.total}
     
     The Products will be shipped to {order.shipping_address}
@@ -523,6 +580,29 @@ def send_confirmation_email(order):
 
     # Send the email
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+
+
+
+@login_required
+def order_history(request):
+    # Fetch only completed orders for the logged-in user
+    completed_orders = Order.objects.filter(user=request.user, status='Completed').order_by('-order_date')  # Most recent first
+    
+    # Pass the completed orders to the template
+    return render(request, 'Store/order_history.html', {'orders': completed_orders})
+
+
+@login_required
+def order_detail(request, order_id):
+    # Fetch the order based on the order ID
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Fetch the order items associated with this order
+    order_items = order.items.all()
+
+    return render(request, 'order_detail.html', {'order': order, 'order_items': order_items})
+
 
 
 def contact_view(request):
