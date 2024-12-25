@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Select or Add Address</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://pay.google.com/gp/p/js/pay.js" async></script>
     
     <style>
       body {
@@ -303,7 +304,7 @@
                 <g></g>
               </svg>
             </button>
-            <button type="button" name="google_pay">
+            <button type="button" name="google_pay" id="google-pay-button">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="80"
@@ -359,7 +360,80 @@
       </div>
     </div>
     <script>
-      
+        
+        // Initialize Google Pay
+        function onGooglePayLoaded() {
+            // Set up the Google Pay API
+            const paymentsClient = new google.payments.api.PaymentsClient({ environment: 'TEST' });
+
+            // Attach the click event listener to the existing Google Pay button
+            document.getElementById('google-pay-button').addEventListener('click', function() {
+                onGooglePaymentButtonClicked(paymentsClient); // Call the payment handling function
+            });
+        }
+
+        // Define allowed payment methods (UPI in this case)
+        function getGooglePaymentMethods() {
+            return [{
+                type: 'google_pay',
+                parameters: {
+                    supportedNetworks: ['UPI'] // UPI support
+                }
+            }];
+        }
+
+        // Triggered when the Google Pay button is clicked
+        function onGooglePaymentButtonClicked(paymentsClient) {
+            const paymentDataRequest = getGooglePaymentDataRequest();
+
+            // Load the payment data from Google Pay
+            paymentsClient.loadPaymentData(paymentDataRequest).then(function(paymentData) {
+                processPayment(paymentData); // Process the payment data
+            }).catch(function(err) {
+                console.error('Google Pay error:', err); // Handle errors
+            });
+        }
+
+        // Define the payment data request
+        function getGooglePaymentDataRequest() {
+            return {
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: getGooglePaymentMethods(),
+                transactionInfo: {
+                    totalPriceStatus: 'FINAL',
+                    totalPrice: '10.00', // The amount for the transaction
+                    currencyCode: 'INR' // Currency code (INR for India)
+                },
+                merchantInfo: {
+                    merchantName: 'Example Merchant',
+                    merchantId: 'your-merchant-id' // Replace with your actual Google Pay Merchant ID
+                }
+            };
+        }
+
+        // Handle the payment data received from Google Pay
+        function processPayment(paymentData) {
+            // Payment data is ready for processing, send it to your server for further steps (e.g., payment verification, order creation)
+            console.log('Payment Data:', paymentData);
+            // Example: Send the payment data to your backend API for processing
+            // fetch('/process-payment', { method: 'POST', body: JSON.stringify(paymentData) })
+            //     .then(response => response.json())
+            //     .then(data => console.log('Payment processed:', data))
+            //     .catch(error => console.error('Error processing payment:', error));
+        }
+
+        // Ensure to load Google Pay API script and initialize on Google Pay loaded
+        function loadGooglePayScript() {
+            const script = document.createElement('script');
+            script.src = 'https://pay.google.com/gp/p/js/pay.js';
+            script.onload = onGooglePayLoaded;
+            document.body.appendChild(script);
+        }
+
+        // Load the Google Pay API script
+        loadGooglePayScript();
+
     </script>
   </body>
 </html>

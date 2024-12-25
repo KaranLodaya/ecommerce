@@ -575,23 +575,64 @@ def payments(request, order_id):
 
     # If the request is POST, process the payment action
     elif request.method == 'POST':
-        # Assume some payment logic happens here
-        if 'pay' in request.POST:  # Example: form button named 'pay'
-            # Update payment status to 'paid'
-            order.payment_status = 'paid'
-            order.save()
-            return redirect('order_confirmation', order_id=order.id)
-        elif 'cancel' in request.POST:  # Handle other actions, like cancel
-            return redirect('cart', order_id=order.id)
-        
-        # Handle invalid POST data
-        return HttpResponseBadRequest("Invalid request.")
+        # Get the payment method from the request
+        payment_method = request.POST.get('payment_method')
 
+        if payment_method == 'card':
+            return handle_card_payment(request)
+        elif payment_method == 'cod':
+            return handle_cod_payment(request)
+        elif payment_method == 'google_pay':
+            return handle_google_pay(request)
+        else:
+            return JsonResponse({'status': 'failure', 'message': 'Invalid payment method'})
     # If the request method is neither GET nor POST
     return HttpResponseBadRequest("Invalid request method.")
     
 
 
+
+
+
+
+
+
+# Handle Google pay Payment
+def handle_google_pay(request):
+    # Extract UPI payment details from the request
+    payment_data = json.loads(request.body)
+
+    # Verify UPI payment by checking the token (you can extend this for other UPI methods)
+    if payment_data.get('paymentMethodData', {}).get('tokenizationData', {}).get('token') == 'expected_token':
+        return JsonResponse({'status': 'success', 'message': 'UPI payment successful'})
+    else:
+        return JsonResponse({'status': 'failure', 'message': 'UPI payment failed'})
+
+
+# Handle Card Payment
+def handle_card_payment(request):
+    # Extract payment details from the request
+    payment_data = json.loads(request.body)
+
+    # Extract card details (e.g., card number, expiry date, CVV)
+    card_number = payment_data.get('card_number', '')
+    card_expiry = payment_data.get('expiry_date', '')
+    card_cvv = payment_data.get('cvv', '')
+
+    # Simulate card verification (replace this with actual gateway integration)
+    if card_number == 'expected_card_number' and card_expiry == '12/25' and card_cvv == '123':
+        # If the payment is successful, return a success response
+        return JsonResponse({'status': 'success', 'message': 'Card payment successful'})
+    else:
+        # If payment verification fails, return a failure response
+        return JsonResponse({'status': 'failure', 'message': 'Card payment failed'})
+
+
+
+# Handle Cash on Delivery (COD) Payment
+def handle_cod_payment(request):
+    # Handle COD payment logic (usually no API call, just updating the order status)
+    return JsonResponse({'status': 'success', 'message': 'COD payment selected'})
 
 
 # View to confirm the order
