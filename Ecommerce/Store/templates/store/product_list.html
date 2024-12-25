@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product List</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
       body {
         background-color: whitesmoke;
@@ -128,7 +130,6 @@
           <div class="relative overflow-hidden w-full h-2/3  p-2">
             <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-cover w-full h-full rounded-[20px]" />
           </div>
-
           <hr>
         
           <!-- Content section with equal height distribution -->
@@ -171,7 +172,7 @@
               method: "GET",
               success: function (response) {
                   // Update the cart count in the navbar
-                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+                  updateCartItemCount()
   
                   // Update the product quantity on the card
                   const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
@@ -195,7 +196,7 @@
               method: "GET",
               success: function (response) {
                   // Update the cart count in the navbar
-                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+                  updateCartItemCount()
   
                   // Update the product quantity on the card
                   const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);

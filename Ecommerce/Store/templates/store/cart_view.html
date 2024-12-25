@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Your Cart</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bootstrap CSS -->
-    <!-- <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    /> -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
     <style>
 
       h5 {
@@ -556,50 +554,27 @@
               url: addToCartUrl,
               method: "GET",
               success: function (response) {
-                  // Update the cart count in the navbar
-                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
-  
-                  // Update the product quantity on the card
-                  const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
-            if (quantityDiv.length) {
-                const updatedQuantity = response.updated_quantity;
-                quantityDiv.text(updatedQuantity);
+                // Update the cart count in the navbar
+                updateCartItemCount();
 
-                // Update the subtotal, shipping, and total
-                $("#subtotal").text("Subtotal: ₹" + response.subtotal);
-                $("#shipping").text("Shipping: ₹" + response.shipping);
-                $("#total").text("Grand Total: ₹" + response.total);
+                // Update the product quantity on the card
+                const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
+                if (quantityDiv.length) {
+                  const updatedQuantity = response.updated_quantity;
+                  quantityDiv.text(updatedQuantity);
 
-                // If the updated quantity is 1, change the button to a trash bin icon
-                if (updatedQuantity === 1) {
-                    const removeButton = quantityDiv.closest('.card__counter').find('.remove_from_cart');
-                    removeButton.html(`
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_1545_11122)">
-                                <path d="M1 3.5H13" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M2.5 3.5H11.5V12.5C11.5 12.7652 11.3946 13.0196 11.2071 13.2071C11.0196 13.3946 10.7652 13.5 10.5 13.5H3.5C3.23478 13.5 2.98043 13.3946 2.79289 13.2071C2.60536 13.0196 2.5 12.7652 2.5 12.5V3.5Z" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M4.5 3.5V3C4.5 2.33696 4.76339 1.70107 5.23223 1.23223C5.70107 0.763392 6.33696 0.5 7 0.5C7.66304 0.5 8.29893 0.763392 8.76777 1.23223C9.23661 1.70107 9.5 2.33696 9.5 3V3.5" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M5.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M8.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                            </g>
-                            <defs>
-                                <clipPath id="clip0_1545_11122">
-                                    <rect width="14" height="14" fill="white"/>
-                                </clipPath>
-                            </defs>
-                        </svg>
-                    `);
-                } else if (updatedQuantity > 1) {
-                    // If the updated quantity is greater than 1, change the button back to the minus sign
-                    const removeButton = quantityDiv.closest('.card__counter').find('.remove_from_cart');
-                    removeButton.html(`
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4.5 7H9.5" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    `);
+                  // Update the subtotal, shipping, and total
+                  $("#subtotal").text("Subtotal: ₹" + response.subtotal);
+                  $("#shipping").text("Shipping: ₹" + response.shipping);
+                  $("#total").text("Grand Total: ₹" + response.total);
+
+                  if (updatedQuantity > 1) {
+                      // If the updated quantity is greater than 1, change the button back to the minus sign
+                      const removeButton = quantityDiv.closest('.card__counter').find('.remove_from_cart');
+                      removeButton.html('-');
+                  }
                 }
-              }
-            },
+              },
             error: function (xhr, status, error) {
                 alert("An error occurred. Please try again.");
             },
@@ -616,52 +591,57 @@
               method: "GET",
               success: function (response) {
                   // Update the cart count in the navbar
-                  $("#cart-link").text("Cart (" + response.cart_item_count + ")");
+                  updateCartItemCount()
   
                   // Update the product quantity on the card
                   const quantityDiv = $(`.card__counter-score[data-product-id="${productId}"]`);
                   if (quantityDiv.length) {
                       const updatedQuantity = response.updated_quantity;
-                quantityDiv.text(updatedQuantity);
-  
-                // Update the subtotal, shipping, and total
-                $("#subtotal").text("Subtotal: ₹" + response.subtotal);
-                $("#shipping").text("Shipping: ₹" + response.shipping);
-                $("#total").text("Grand Total: ₹" + response.total);
-  
-                // If the updated quantity is 0, remove the item card
-                if (updatedQuantity === 0) {
-                    const itemCard = quantityDiv.closest('.cart-item'); // Assuming each item card has a class `cart-item`
-                    itemCard.remove(); // Remove the item card from the window
-                } else if (updatedQuantity === 1) {
-                    // If the updated quantity is 1, change the button to a trash bin icon
-                    const removeButton = quantityDiv.closest('.card__counter').find('.remove_from_cart');
-                    removeButton.html(`
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_1545_11122)">
-                                <path d="M1 3.5H13" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M2.5 3.5H11.5V12.5C11.5 12.7652 11.3946 13.0196 11.2071 13.2071C11.0196 13.3946 10.7652 13.5 10.5 13.5H3.5C3.23478 13.5 2.98043 13.3946 2.79289 13.2071C2.60536 13.0196 2.5 12.7652 2.5 12.5V3.5Z" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M4.5 3.5V3C4.5 2.33696 4.76339 1.70107 5.23223 1.23223C5.70107 0.763392 6.33696 0.5 7 0.5C7.66304 0.5 8.29893 0.763392 8.76777 1.23223C9.23661 1.70107 9.5 2.33696 9.5 3V3.5" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M5.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M8.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
-                            </g>
-                            <defs>
-                                <clipPath id="clip0_1545_11122">
-                                    <rect width="14" height="14" fill="white"/>
-                                </clipPath>
-                            </defs>
-                        </svg>
-                    `);
-                }
-            }
-        },
-        error: function (xhr, status, error) {
-            alert("An error occurred. Please try again.");
+                      quantityDiv.text(updatedQuantity);
+        
+                      // Update the subtotal, shipping, and total
+                      $("#subtotal").text("Subtotal: ₹" + response.subtotal);
+                      $("#shipping").text("Shipping: ₹" + response.shipping);
+                      $("#total").text("Grand Total: ₹" + response.total);
+        
+                      // If the updated quantity is 0, remove the item card
+                      if (updatedQuantity === 0) {
+                          const itemCard = quantityDiv.closest('.cart-item'); // Assuming each item card has a class `cart-item`
+                          itemCard.remove(); // Remove the item card from the window
+
+                      } else if (updatedQuantity === 1) {
+                          // If the updated quantity is 1, change the button to a trash bin icon
+                          const removeButton = quantityDiv.closest('.card__counter').find('.remove_from_cart');
+                          removeButton.html(`
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <g clip-path="url(#clip0_1545_11122)">
+                                      <path d="M1 3.5H13" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
+                                      <path d="M2.5 3.5H11.5V12.5C11.5 12.7652 11.3946 13.0196 11.2071 13.2071C11.0196 13.3946 10.7652 13.5 10.5 13.5H3.5C3.23478 13.5 2.98043 13.3946 2.79289 13.2071C2.60536 13.0196 2.5 12.7652 2.5 12.5V3.5Z" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
+                                      <path d="M4.5 3.5V3C4.5 2.33696 4.76339 1.70107 5.23223 1.23223C5.70107 0.763392 6.33696 0.5 7 0.5C7.66304 0.5 8.29893 0.763392 8.76777 1.23223C9.23661 1.70107 9.5 2.33696 9.5 3V3.5" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
+                                      <path d="M5.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
+                                      <path d="M8.5 5.5V11" stroke="#000001" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </g>
+                                  <defs>
+                                      <clipPath id="clip0_1545_11122">
+                                          <rect width="14" height="14" fill="white"/>
+                                      </clipPath>
+                                  </defs>
+                              </svg>
+                          `);
+                      }
+                    }
+              },
+              error: function (xhr, status, error) {
+                  alert("An error occurred. Please try again.");
 
               },
           });
       });
       
+
+
+
+
 
 
       document.querySelector(".order").addEventListener("click", function () {
@@ -681,10 +661,37 @@
         var subtotal = parseFloat(subtotalText.replace(/[^\d.-]/g, '') || 0);
         var shipping = parseFloat(shippingText.replace(/[^\d.-]/g, '') || 0);
 
+        // Create an empty array to hold the updated item quantities and product IDs
+        var updatedItems = [];
+
+        // Loop through each cart item to capture the updated quantity and product ID
+        document.querySelectorAll('.card__counter-score').forEach(function(cartItem) {
+          var productId = cartItem.dataset.productId;  // Access the product ID from the data-product-id attribute
+          var updatedQuantity = parseInt(cartItem.textContent.trim(), 10);  // Capture the updated quantity
+
+            // Push the updated quantity and product ID to the array
+            // If the quantity is greater than 0, send the item for update
+            if (updatedQuantity > 0) {
+                updatedItems.push({
+                    product_id: productId,
+                    quantity: updatedQuantity
+                });
+            } else {
+                // If quantity is 0, the item might be removed from the cart
+                updatedItems.push({
+                    product_id: productId,
+                    quantity: 0  // Mark the item for removal
+                });
+            }
+        });
+
+        // Debugging: Check the updated items array
+        console.log(updatedItems);
         // Debugging: Check captured values
         console.log("Selected Address:", selectedAddress);
         console.log("Subtotal:", subtotal);
         console.log("Shipping:", shipping);
+        console.log("Updated Items:", updatedItems);
 
         // Send the selected address and other data to the backend via Ajax
         $.ajax({
@@ -694,6 +701,7 @@
                 'shipping_address': selectedAddress,
                 'subtotal': subtotal,
                 'shipping': shipping,
+                'updated_items': JSON.stringify(updatedItems),
                 'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
             },
             success: function(response) {

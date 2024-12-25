@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <nav class="bg-white shadow-md py-4 px-6">
+    <nav class="bg-white shadow-md py-4 px-6 navbar">
         <div class="container mx-auto flex items-center justify-between space-x-4 ">
             <!-- Logo -->
             <a href="/products" class="text-2xl font-bold text-blue-500">UrbanCart</a>
@@ -34,7 +34,13 @@
                         <path d="M18.9677 33.9353C22.716 33.9353 26.134 32.5476 28.7597 30.2714L42.4883 44L44 42.4883L30.2714 28.7597C32.5476 26.134 33.9353 22.716 33.9353 18.9677C33.9353 10.7012 27.2341 4 18.9677 4C10.7012 4 4 10.7012 4 18.9677C4 27.2341 10.7012 33.9353 18.9677 33.9353ZM18.9677 6.13824C26.042 6.13824 31.7971 11.8933 31.7971 18.9677C31.7971 26.042 26.042 31.7971 18.9677 31.7971C11.8933 31.7971 6.13824 26.042 6.13824 18.9677C6.13824 11.8933 11.8933 6.13824 18.9677 6.13824Z" fill="black"/>
                     </svg>
                 </div>
-
+                <div>
+                    <a href="/favourites" class="hover:text-blue-500">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600">
+                            <path d="M8.444 27L24 42L39.556 27C42.256 24.967 44 21.744 44 18.111C44 11.978 39.022 7 32.889 7C29.256 7 26.022 8.756 24 11.456C21.978 8.756 18.744 7 15.111 7C8.978 7 4 11.978 4 18.111C4 21.744 5.744 24.967 8.444 27ZM15.111 9C17.961 9 20.685 10.366 22.399 12.654L24 14.792L25.601 12.655C27.315 10.366 30.039 9 32.889 9C37.913 9 42 13.087 42 18.111C42 20.999 40.671 23.657 38.352 25.402L38.255 25.475L38.167 25.56L24 39.222L9.833 25.56L9.745 25.475L9.648 25.402C7.33 23.657 6 20.999 6 18.111C6 13.087 10.087 9 15.111 9Z" fill="black"/>
+                        </svg>
+                    </a>    
+                </div>
                 <div class="relative">
                     <a href="/cart" class="hover:text-blue-500">
                         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600">
@@ -42,7 +48,7 @@
                             <path d="M20 44C21.1046 44 22 43.1046 22 42C22 40.8954 21.1046 40 20 40C18.8954 40 18 40.8954 18 42C18 43.1046 18.8954 44 20 44Z" fill="black"/>
                             <path d="M32 44C33.1046 44 34 43.1046 34 42C34 40.8954 33.1046 40 32 40C30.8954 40 30 40.8954 30 42C30 43.1046 30.8954 44 32 44Z" fill="black"/>
                         </svg>
-                        <span class="absolute bottom-3 left-3 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-blue-500 rounded-full">{{cart_item_count}}</span>
+                        <span class="absolute bottom-3 left-3 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-blue-500 rounded-full"> {{cart_item_count}} </span>
                     </a>
                 </div>
 
@@ -82,6 +88,8 @@
         </div>
     </nav>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         // Function to toggle the dropdown visibility
         function toggleDropdown() {
@@ -97,6 +105,25 @@
                 dropdown.classList.add('hidden');
             }
         });
+
+        
+        $(document).ready(function () {
+            updateCartItemCount();
+        }); 
+
+        function updateCartItemCount() {
+            $.ajax({
+                url: "/get_cart_item_count/",
+                type: "GET",
+                success: function (response) {
+                    $(".relative span").text(response.cart_item_count);
+                },
+                error: function () {
+                    console.error("Failed to fetch cart count.");
+                },
+            });
+        }
+
     </script>
 </body>
 

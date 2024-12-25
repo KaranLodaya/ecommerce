@@ -13,11 +13,14 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string  # Add this import
 from django.core.mail import send_mail
 from django.conf import settings
-import stripe
+import json
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+
 
 
 # View for listing products
-@login_required
+# @cache_page(60 * 15)  # Cache for 15 minutes
 def product_list(request):
     products = Product.objects.all()
 
@@ -62,6 +65,7 @@ def product_list_by_category(request, category_id=None):
 
 
 # View for product details
+@cache_page(60 * 10)
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     reviews = product.reviews.all()  # Fetch all reviews related to the product
@@ -100,23 +104,55 @@ def product_detail(request, product_id):
 
 
 
-def calculate_cart_totals(cart):
+def calculate_cart_totals(cart, address=None, state_shipping_fees=None):
     """
     Helper function to calculate the total price, shipping, and item count in the cart.
-    Returns a dictionary with updated total price, shipping, total, and item count.
+    If an address is provided, it adds area-based shipping fees to the base fee.
+    Returns a dictionary with updated subtotal, shipping, total, and item count.
     """
+
+    # First, try to fetch the cart totals from the cache
+    cache_key = f"cart_totals_{cart.user.id}"
+    cached_totals = cache.get(cache_key)
+
+    # Calculate subtotal and cart item count
     subtotal = sum(item.product.price * item.quantity for item in cart.items.all())
-    shipping = Decimal("0.002") * subtotal  # Modify if you have more complex shipping logic
-    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    total = subtotal + shipping
     cart_item_count = sum(item.quantity for item in cart.items.all())
-    
-    return {
+
+    # Calculate base shipping fee as 1% of the subtotal
+    shipping = Decimal("0.002") * subtotal
+    shipping = shipping.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    # # If an address is selected, add area-based shipping fee
+    # if address and state_shipping_fees:
+    #     state = address.state
+    #     city = address.city
+
+    #     if state in state_shipping_fees:
+    #         state_info = state_shipping_fees[state]
+    #         if city in state_info["main_cities"]:
+    #             shipping += state_info["base_fee"]
+    #         else:
+    #             shipping += state_info["remote_fee"]
+    #     else:
+    #         shipping += Decimal("150.00")  # Default fee for states not in the predefined list
+
+    # Calculate total (subtotal + shipping)
+    total = subtotal + shipping
+
+    # Prepare the totals dictionary
+    totals = {
         "subtotal": subtotal,
         "shipping": shipping,
         "total": total,
         "cart_item_count": cart_item_count
     }
+
+    # Cache the result for 15 minutes
+    cache.set(cache_key, totals, timeout=60 * 15)
+
+    return totals
+
     
 # View to add an item to the cart
 @login_required
@@ -137,6 +173,10 @@ def add_to_cart(request, product_id):
 
     # Calculate updated cart details
     cart_totals = calculate_cart_totals(cart)
+
+    # Invalidate cache for this user's cart
+    cache.delete(f"cart_{request.user.id}")  # Invalidate the cache
+
 
     # Return updated response
     return JsonResponse({
@@ -170,6 +210,10 @@ def remove_from_cart(request, product_id):
     # Calculate updated cart details
     cart_totals = calculate_cart_totals(cart)
 
+    # Invalidate cache for this user's cart
+    cache.delete(f"cart_{request.user.id}")  # Invalidate the cache
+
+
     # Return updated response
     return JsonResponse({
         "updated_quantity": updated_quantity,
@@ -197,8 +241,20 @@ state_shipping_fees = {
 # View to display the cart
 @login_required
 def cart_view(request):
+   
     # Get the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
+
+    # Get the user's cart from cache or database
+    cart_key = f"cart_{request.user.id}" if request.user.is_authenticated else f"cart_{request.session.session_key}"
+    cart = cache.get(cart_key)
+
+    # If cart is not in the cache, fetch from the database and cache it
+    if not cart:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cache.set(cart_key, cart, timeout=60*30)  # Cache for 30 minutes
+
+
 
     # Get updated cart items
     cart_items = cart.items.all()
@@ -285,6 +341,19 @@ def cart_view(request):
     )
 
 
+from django.db.models import Sum
+def get_cart_item_count(request):
+    cart_items = CartItem.objects.filter(cart__user=request.user)  # Replace with your cart query
+    cart_item_count = cart_items.aggregate(total=Sum('quantity'))['total'] or 0
+    return JsonResponse({'cart_item_count': cart_item_count})
+
+
+
+def favourites(request):
+    return render(request, 'Store/favourites.html', {})
+
+
+
 @login_required
 def address(request):
     user = request.user
@@ -359,70 +428,41 @@ def address(request):
         return redirect("cart_view")  # If not POST, just redirect back to the cart page
 
 
+
 @login_required
 def place_order(request):
     if request.method == "POST":
         shipping_address_id = request.POST.get("shipping_address")
         print(shipping_address_id)
+        updated_items = json.loads(request.POST.get("updated_items", "[]"))  # Parse the updated items from JSON
+
         # Ensure shipping_address_id is valid
         if not shipping_address_id:
-            print("12345")
+            print("no shipping address id")
             return JsonResponse(
                 {"success": False, "message": "Shipping address is required."}
             )
 
         shipping_address = get_object_or_404(Address, id=shipping_address_id)
         print(shipping_address)
-        # Fetch the user's cart
+       
+        # Check for an active cart
         cart = Cart.objects.filter(user=request.user, is_ordered=False).first()
-        print("12121")
-        # If the user doesn't have an active cart, return an error
-        if not cart:
-            print("@@@@")
-            return JsonResponse({"success": False, "message": "Your cart is empty."})
 
-        # Fetch the cart items associated with the user's cart
-        cart_items = CartItem.objects.filter(cart=cart)
+        if cart:
+            print("Active cart found. Creating a new order.")
+            # Fetch cart items and check if cart is not empty
+            cart_items = CartItem.objects.filter(cart=cart)
+            if not cart_items.exists():
+                return JsonResponse({"success": False, "message": "No items in the cart."})
 
-        # Check if cart items exist
-        if not cart_items.exists():
-            print("####")
-            return JsonResponse({"success": False, "message": "No items in the cart."})
+            # Calculate subtotal and total
+            subtotal = sum(item.subtotal() for item in cart_items)
+            shipping = Decimal(request.POST.get("shipping", 0))
+            total = subtotal + shipping
 
-        # Debug: Print cart item details
-        for item in cart_items:
-            print(f"Cart Item: {item.product.name}, Quantity: {item.quantity}")
-
-        # Calculate the subtotal based on the cart items
-        subtotal = sum(item.subtotal() for item in cart_items)
-
-        # Capture shipping cost (if any, for now assuming you have a fixed method for it)
-        shipping = Decimal(request.POST.get("shipping", 0))  # Default to 0 if not provided
-        total = subtotal + shipping
-
-        # Check if the user has an existing unpaid order
-        existing_order = Order.objects.filter(user=request.user, status="pending").first()
-
-        if existing_order:
-            # Modify the existing order (update items, shipping address, etc.)
-            existing_order.shipping_address = shipping_address
-            existing_order.subtotal = subtotal
-            existing_order.shipping = shipping
-            existing_order.total = total
-            existing_order.save()
-
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": "Order updated successfully.",
-                    "order_id": existing_order.id,
-                }
-            )
-        else:
-            # Generate order number for a new order
+            # Create a new order
             order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
-
-            # Create the new order
             order = Order.objects.create(
                 user=request.user,
                 shipping_address=shipping_address,
@@ -433,7 +473,7 @@ def place_order(request):
                 status="pending",
             )
 
-            # Create order items from the cart items
+            # Create order items
             for item in cart_items:
                 OrderItem.objects.create(
                     order=order,
@@ -441,24 +481,78 @@ def place_order(request):
                     quantity=item.quantity,
                     price=item.product.price,
                 )
-                print(f"Order Item Created: {item.product.name}, Quantity: {item.quantity}")
 
             # Mark the cart as ordered
             cart.is_ordered = True
             cart.save()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": "Order placed successfully.",
-                    "order_id": order.id,
-                }
-            )
+            print(f"New order created: {order.order_number}")
+            return JsonResponse({"success": True, "message": "Order placed successfully.", "order_id": order.id})
+
+        else: #cart is not active, but lets check for pending order
+            pending_order = Order.objects.filter(user=request.user, status="pending").first()
+
+            print("no active cart found, checking for pending order")
+            if pending_order:
+                print("Pending order found. Updating order details.")
+
+                # Update the existing order with the new address and totals
+                subtotal = Decimal(request.POST.get("subtotal", 0))
+                shipping = Decimal(request.POST.get("shipping", 0))
+                total = subtotal + shipping
+
+                pending_order.shipping_address = shipping_address
+                pending_order.subtotal = subtotal
+                pending_order.shipping = shipping
+                pending_order.total = total
+                pending_order.save()
+
+                # Now handle updating the order items
+                for item in updated_items:
+                    product_id = item['product_id']
+                    quantity = item['quantity']
+                    
+                    # Find the corresponding order item
+                    order_item = OrderItem.objects.filter(order=pending_order, product_id=product_id).first()
+                    if order_item:
+                            # Update the order item quantity
+                            order_item.quantity = quantity
+                            order_item.save()
+                    else:
+                        # If the item is not found in the order, create a new order item
+                        if quantity > 0:
+                            product = Product.objects.get(id=product_id)
+                            price = product.price  # Assuming `price` is a field in the Product model
+
+                            # Create new order item and associate with the pending order
+                            OrderItem.objects.create(
+                                order=pending_order,
+                                product_id=product_id,
+                                quantity=quantity,
+                                price=price  # Pass the price here
+                            )
+                            print(f"Added new item with product ID {product_id} to the order.")
+
+
+                    # After updating the items, remove any order items that are no longer in the updated list
+                    # Get a list of all product_ids from the updated items
+                    updated_product_ids = [item['product_id'] for item in updated_items]
+
+                    # Remove items from the order that are not in the updated list
+                    order_items_to_remove = OrderItem.objects.filter(order=pending_order).exclude(product_id__in=updated_product_ids)
+                    order_items_to_remove.delete()
+
+                print(f"Updated order: {pending_order.order_number}")
+
+                return JsonResponse(
+                    {"success": True, "message": "Order updated successfully.", "order_id": pending_order.id}
+                )
+
+            # No active cart and no pending order
+            print("No active cart or pending order found.")
+            return JsonResponse({"success": False, "message": "Your cart is empty, and no pending order exists."})
 
     return JsonResponse({"success": False, "message": "Invalid request."})
-
-
-
 
 
 
@@ -496,39 +590,31 @@ def payments(request, order_id):
     # If the request method is neither GET nor POST
     return HttpResponseBadRequest("Invalid request method.")
     
-    # # Create Stripe Payment Intent
-    # try:
-    #     payment_intent = stripe.PaymentIntent.create(
-    #         amount=int(order.total * 100),  # Stripe expects the amount in cents
-    #         currency='usd',
-    #         metadata={'order_id': order.id}
-    #     )
 
-    #     # Save the client secret for front-end usage
-    #     order.payment_status = 'pending'
-    #     order.save()
 
-    #     return render(request, 'Store/payments.html', {
-    #         'client_secret': payment_intent.client_secret,
-    #         'order': order
-    #     })
 
-    # except stripe.error.StripeError as e:
-    #     messages.error(request, "There was an issue processing your payment. Please try again.")
-    #     return redirect('cart_view')  # Or handle it as you see fit
 
 # View to confirm the order
 @login_required
-def order_confirmation(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    cart = Cart.objects.filter(user=request.user, is_ordered=False).first()  # Get the user's active cart
+def order_confirmation(request):
+    # Fetch the latest completed order for the user
+    order = (
+        Order.objects.filter(user=request.user, payment_status="Completed")
+        .order_by("-created_at")
+        .first()
+    )
+    
+    if not order:
+        # If no completed order exists, return a 404 or redirect
+        return render(request, "Store/no_order_found.html", status=404)
 
-    send_confirmation_email(order)  # Pass only the order object to the email function
+    # Send confirmation email for the latest completed order
+    send_confirmation_email(order)
 
+    # Render the confirmation page
     return render(
         request, "Store/order_confirmation.html", {
             "order": order,
-            "cart": cart
         }
     )
 
@@ -536,11 +622,7 @@ def order_confirmation(request, order_id):
 def send_confirmation_email(order):
     # Set the email subject
     subject = f"Order Confirmation - {order.order_number}"
-    
-    cart = Cart.objects.filter(
-        user=order.user, is_ordered=False
-    ).first()  # Get the user's active car
-   
+
     # Create the email message
     message = f"""
     Dear {order.user},
@@ -548,28 +630,27 @@ def send_confirmation_email(order):
     Thank you for your order! Your order number is {order.order_number}.
     
     Order Details:
-   
     """
 
-    # Loop through the items in the cart and append them to the message
-    for item in cart.items.all():  # Assuming `order.cart.items.all()` gives you the items in the cart
-        message += f"{item.product.name}: Qt.{item.quantity}\n"
+    # Fetch the order items and add their details to the message
+    for item in order.items.all():  # Assuming `order.items` gives the related order items
+        message += f"{item.product.name}: Qty {item.quantity}, Price ₹{item.price}\n"
     
+    # Add the subtotal, shipping, and total to the email message
     message += f"""
     Subtotal: ₹{order.subtotal}
-
     Shipping: ₹{order.shipping}
-
     Total: ₹{order.total}
     
-    The Products will be shipped to {order.shipping_address}
+    The products will be shipped to:
+    {order.shipping_address}
 
     You will receive further updates on your order soon.
 
     Thank you for shopping with us!
 
     Best Regards,
-    UrbanCart 
+    UrbanCart
     """
 
     # Set the from email address (configured in settings.py)
@@ -580,7 +661,6 @@ def send_confirmation_email(order):
 
     # Send the email
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
 
 
 

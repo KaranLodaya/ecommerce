@@ -1,0 +1,12 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    /* background-color: #333; Adjust color */
+    /* color: white; */
+}
+
+body {
+    padding-top: 80px; /* Adjust based on navbar height */
+}
