@@ -147,9 +147,3 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-import os
-
-# Use environment variables in your settings.py file
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
