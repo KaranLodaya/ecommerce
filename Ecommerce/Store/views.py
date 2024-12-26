@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseBadRequest, JsonResponse
-from .models import Category, Product,Review, Cart, CartItem, Address, payment, Order, OrderItem
+from .models import Category, Product,Review, Cart, CartItem, Address, Payment, Order, OrderItem
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal, ROUND_HALF_UP
 from .forms import AddressForm, ReviewForm
@@ -486,14 +486,24 @@ def place_order(request):
             cart.is_ordered = True
             cart.save()
 
+             # Create a new Payment instance linked to this order
+            payment = Payment.objects.create(
+                user=request.user,
+                order=order,
+                amount=total,
+                payment_method='', 
+                status='pending',  # Initial payment status
+            )
+
             print(f"New order created: {order.order_number}")
             return JsonResponse({"success": True, "message": "Order placed successfully.", "order_id": order.id})
 
-        else: #cart is not active, but lets check for pending order
-            pending_order = Order.objects.filter(user=request.user, status="pending").first()
+        else: #no active, check for pending order
+            pending_order = Order.objects.filter(user=request.user, status="Pending")
 
             print("no active cart found, checking for pending order")
             if pending_order:
+                pending_order = pending_order.first()
                 print("Pending order found. Updating order details.")
 
                 # Update the existing order with the new address and totals
@@ -542,6 +552,21 @@ def place_order(request):
                     order_items_to_remove = OrderItem.objects.filter(order=pending_order).exclude(product_id__in=updated_product_ids)
                     order_items_to_remove.delete()
 
+                    # Create or update the payment for the pending order
+                    payment = Payment.objects.filter(order=pending_order).first()
+                    if payment:
+                        payment.amount = total
+                        payment.status = 'pending'  # Update payment status if needed
+                        payment.save()
+                    else:
+                        payment = Payment.objects.create(
+                            user=request.user,
+                            order=pending_order,
+                            amount=total,
+                            payment_method='cash_on_delivery',  # Assuming 'cash_on_delivery'
+                            status='pending',
+                        )
+
                 print(f"Updated order: {pending_order.order_number}")
 
                 return JsonResponse(
@@ -565,12 +590,17 @@ def payments(request, order_id):
     # Fetch the order using the order_id
     order = get_object_or_404(Order, id=order_id)
 
-    # If the request is GET, render the payment page
-    if request.method == 'GET':
-        if order.payment_status == 'paid':
+    # Check for the related payment object
+    payment = Payment.objects.filter(order=order).first()  # Get the payment associated with the order
+
+    # If payment exists, check the payment status
+    if payment:
+        if payment.status == 'completed':
             # Redirect if the payment is already completed
             return redirect('order_confirmation', order_id=order.id)
-        # Render the payment template
+
+    # If the request is GET, render the payment page
+    if request.method == 'GET':
         return render(request, 'Store/payments.html', {'order': order})
 
     # If the request is POST, process the payment action
@@ -581,15 +611,33 @@ def payments(request, order_id):
         if payment_method == 'card':
             return handle_card_payment(request)
         elif payment_method == 'cod':
-            return handle_cod_payment(request)
+            return handle_cod_payment(request, order_id)
         elif payment_method == 'google_pay':
             return handle_google_pay(request)
         else:
             return JsonResponse({'status': 'failure', 'message': 'Invalid payment method'})
+
     # If the request method is neither GET nor POST
     return HttpResponseBadRequest("Invalid request method.")
     
 
+
+# Handle Cash on Delivery (COD) Payment
+def handle_cod_payment(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+    payment = Payment.objects.filter(order=order).first()
+
+    if payment:
+        payment.payment_method = 'cash_on_delivery'
+        payment.status = 'pending'
+        payment.save()
+        order.status = 'Placed'
+        order.save()
+        print("order status - placed")
+
+    
+    return JsonResponse({'status': 'success', 'message': 'COD payment selected'})
 
 
 
@@ -629,38 +677,30 @@ def handle_card_payment(request):
 
 
 
-# Handle Cash on Delivery (COD) Payment
-def handle_cod_payment(request):
-    # Handle COD payment logic (usually no API call, just updating the order status)
-    return JsonResponse({'status': 'success', 'message': 'COD payment selected'})
+
 
 
 # View to confirm the order
 @login_required
-def order_confirmation(request):
+def order_confirmation(request , order_id):
     # Fetch the latest completed order for the user
-    order = (
-        Order.objects.filter(user=request.user, payment_status="Completed")
-        .order_by("-created_at")
-        .first()
-    )
-    
+    order = get_object_or_404(Order, id=order_id)
+
     if not order:
         # If no completed order exists, return a 404 or redirect
         return render(request, "Store/no_order_found.html", status=404)
 
     # Send confirmation email for the latest completed order
-    send_confirmation_email(order)
+    # send_confirmation_email(order)
 
-    # Render the confirmation page
-    return render(
-        request, "Store/order_confirmation.html", {
-            "order": order,
-        }
-    )
+    # Pass the order to the template for rendering
+    return render(request, 'Store/order_confirmation.html', {'order': order})
 
 
-def send_confirmation_email(order):
+
+
+
+def send_confirmation_email(order, payment_method, transaction_id=None):
     # Set the email subject
     subject = f"Order Confirmation - {order.order_number}"
 
@@ -686,6 +726,17 @@ def send_confirmation_email(order):
     The products will be shipped to:
     {order.shipping_address}
 
+    Payment Method: {payment_method}
+    """
+
+    # Add the transaction ID if available (not for Cash on Delivery)
+    if payment_method != 'cash_on_delivery' and transaction_id:
+        message += f"Transaction ID: {transaction_id}\n"
+    else:
+        message += "No transaction ID (Cash on Delivery)\n"
+
+    # Add the closing message
+    message += """
     You will receive further updates on your order soon.
 
     Thank you for shopping with us!
@@ -702,6 +753,7 @@ def send_confirmation_email(order):
 
     # Send the email
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
 
 
 

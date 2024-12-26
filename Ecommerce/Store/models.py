@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal, ROUND_HALF_UP
+from django.utils.timezone import now
 
 
 class Category(models.Model):
@@ -120,8 +121,35 @@ class Address(models.Model):
 
 
 
-class payment(models.Model):
-    pass
+
+class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('credit_card', 'Credit Card'),
+        ('debit_card', 'Debit Card'),
+        ('upi', 'UPI'),
+        # ('paypal', 'PayPal'),
+        # ('net_banking', 'Net Banking'),
+        ('cash_on_delivery', 'Cash on Delivery'),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='payment')  # Assuming you have an Order model
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)  # For storing transaction details from payment gateway
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Payment {self.id} - {self.status}"
     
 
     
@@ -133,26 +161,47 @@ class Order(models.Model):
         ('Shipped', 'Shipped'),
         ('Delivered', 'Delivered'),
         ('Cancelled', 'Cancelled'),
-    ]
-    
-    PAYMENT_STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
+        ('Refunded', 'Refunded'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    shipping_address = models.ForeignKey(
+        'Address', on_delete=models.SET_NULL, null=True, related_name='orders'
+    )
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    shipping = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))  # Tax calculation
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     order_number = models.CharField(max_length=255, unique=True)
-    order_date = models.DateTimeField(auto_now_add=True)
+    order_date = models.DateTimeField(default=now)  # Easier for testing/customization
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    tracking_number = models.CharField(max_length=255, blank=True, null=True)  # For shipment tracking
+    notes = models.TextField(blank=True, null=True)  # Additional comments or details
+
+    # Removed payment_status, relying on the related Payment model instead
 
     def __str__(self):
-        return f"Order {self.order_number} for {self.user.username}"
+        return f"Order {self.order_number} by {self.user.username} - {self.status}"
+
+    def calculate_total(self):
+        """Calculate the total amount for the order."""
+        self.total = self.subtotal + self.shipping + self.tax
+        return self.total
+
+    def is_payment_completed(self):
+        """Check if the payment for this order is completed."""
+        return hasattr(self, 'payment') and self.payment.status == 'completed'
+
+    def get_payment_method(self):
+        """Retrieve the payment method for the order."""
+        return self.payment.payment_method if hasattr(self, 'payment') else None
+
+    def get_transaction_id(self):
+        """Retrieve the transaction ID for the payment."""
+        return self.payment.transaction_id if hasattr(self, 'payment') else None
+
+    class Meta:
+        ordering = ['-order_date']  # Most recent orders first
     
 
 

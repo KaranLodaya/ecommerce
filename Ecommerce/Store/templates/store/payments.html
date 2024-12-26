@@ -177,7 +177,8 @@
   <body class="mx-auto w-full">
       <!-- Payment Modal -->
       <div class="mt-4 bg-white rounded-[26px] p-4 shadow-sm mx-auto w-full">
-        <form class="form" method="post" action="{% url 'place_order' %}">
+        <form class="form" method="post" action="{% url 'payments' order_id=order.id %}">
+          {% csrf_token %}
           <div class="input_container">
             <label class="input_label" for="cardholder_name"
               >Card holder full name</label
@@ -226,7 +227,7 @@
             <hr class="line" />
           </div>
           <div class="payment--options">
-            <button type="button" name="paypal">
+            <button type="submit" name="paypal">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -281,7 +282,7 @@
                 ></path>
               </svg>
             </button>
-            <button type="button" name="apple_pay">
+            <button type="submit" name="apple_pay">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -304,7 +305,7 @@
                 <g></g>
               </svg>
             </button>
-            <button type="button" name="google_pay" id="google-pay-button">
+            <button type="submit" name="google_pay" id="google-pay-button">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="80"
@@ -352,10 +353,10 @@
           </div>
           <div class="separator">
             <hr class="line" />
-            <p>or pay with COD</p>
+            <p>or pay with Cash</p>
             <hr class="line" />
           </div>
-          <button type="button" name="payment_method" value="cod" class="COD" >Cash on Delivery</button>
+          <button type="submit" name="payment_method" value="cod" class="COD" >Cash on Delivery</button>
         </form>
       </div>
     </div>
