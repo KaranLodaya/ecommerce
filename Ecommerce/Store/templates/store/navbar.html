@@ -14,7 +14,10 @@
 
             <!-- Search Bar (visible on large screens) -->
             <div class="hidden md:block w-full max-w-lg mx-4">
-                <input type="text" placeholder="Search..." class="w-full px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" id="search-input" placeholder="Search..." class="w-full px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <div id="search-results" class="absolute bg-white border rounded-md shadow-lg w-full mt-2 hidden z-50">
+                    <!-- Dynamic search results will appear here -->
+                </div>
             </div>
 
             <!-- Links (visible on larger screens) -->
@@ -123,6 +126,57 @@
                 },
             });
         }
+
+
+
+        $(document).ready(function () {
+        const searchInput = $('#search-input');
+        const searchResults = $('#search-results');
+
+        searchInput.on('input', function () {
+            const query = $(this).val();
+
+            if (query.length > 0) {
+                $.ajax({
+                    url: '/search/', // Your Django search endpoint
+                    type: 'GET',
+                    data: { q: query },
+                    success: function (data) {
+                        searchResults.empty(); // Clear previous results
+                        if (data.results.length > 0) {
+                            searchResults.removeClass('hidden');
+                            data.results.forEach(product => {
+                                searchResults.append(`
+                                    <div class="p-4 hover:bg-gray-100">
+                                        <strong>${product.name}</strong><br>
+                                        <span class="text-sm text-gray-600">${product.description}</span><br>
+                                        <span class="text-blue-500 font-bold">Price: $${product.price}</span>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            searchResults.removeClass('hidden');
+                            searchResults.html('<p class="p-4 text-gray-600">No results found.</p>');
+                        }
+                    },
+                    error: function () {
+                        console.error('Error fetching search results');
+                        searchResults.html('<p class="p-4 text-red-500">Error loading results</p>');
+                    },
+                });
+            } else {
+                searchResults.addClass('hidden');
+            }
+        });
+
+        // Hide results when clicking outside
+        $(document).click(function (e) {
+            if (!searchInput.is(e.target) && !searchResults.is(e.target) && searchResults.has(e.target).length === 0) {
+                searchResults.addClass('hidden');
+            }
+        });
+    });
+
 
     </script>
 </body>

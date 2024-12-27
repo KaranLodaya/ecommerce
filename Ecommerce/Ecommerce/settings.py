@@ -53,6 +53,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+CSRF_COOKIE_SECURE = False  # If you're using http://localhost
+CSRF_COOKIE_HTTPONLY = True
+
+
 ROOT_URLCONF = 'Ecommerce.urls'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -147,3 +152,10 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+
+STRIPE_TEST_PUBLIC_KEY = 'pk_test_51QZu5GGauISwI5X2XefNOxU2dS1SSRsAnmhJj7ADxWexBDtXmLv0oNWPDLTAreB1efnuWURoc9w2I7JHU6tQSN0R00ARB5vtAs'
+STRIPE_TEST_SECRET_KEY = 'sk_test_51QZu5GGauISwI5X2ZKPVWkDIPbOBfK9Dee8I6KHQGfH70GV4BfCJ2F84pST7ImoIJ6aSPL5E4Xlfq3tq3iCLAZuJ003xSBmXXl'
