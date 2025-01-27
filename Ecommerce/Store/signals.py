@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
@@ -52,20 +52,40 @@ def send_confirmation_email(order, payment_method, transaction_id=None):
 
 
 # Signal receiver that listens for order status placed
-@receiver(post_save, sender=Order)
-def send_order_confirmation(sender, instance, created, **kwargs):
-    # Ensure the order was updated, not created
-    if not created:
-        # Check if the status was updated to 'placed'
-        if instance.status == 'placed' and instance.status != instance.__class__.objects.get(id=instance.id).status:
-            # Fetch the payment method and transaction ID
-            payment_method = instance.payment.payment_method if instance.payment else 'Cash on Delivery'
-            transaction_id = instance.payment.transaction_id if instance.payment else None
 
-            # Send confirmation email
-            send_confirmation_email(instance, payment_method, transaction_id)
+# @receiver(post_save, sender=Order)
+# def send_order_confirmation(sender, instance, created, **kwargs):
+#     # Ensure the order was updated, not created
+#     if not created:
+#         # import pdb; pdb.set_trace()
+#         # Check if the status was updated to 'placed'
+#         if instance.status == 'Placed' and instance.status != instance.__class__.objects.get(id=instance.id).status:
+#             import pdb; pdb.set_trace()
+#             # Fetch the payment method and transaction ID
+#             payment_method = instance.payment.payment_method if instance.payment else 'Cash on Delivery'
+#             transaction_id = instance.payment.transaction_id if instance.payment else None
+#             # Send confirmation email
+#             send_confirmation_email(instance, payment_method, transaction_id)
 
 
+@receiver(pre_save, sender=Order)
+def send_order_confirmation(sender, instance, **kwargs):
+    try:
+        # Get the previous state of the order from the database
+        previous_instance = sender.objects.get(id=instance.id)
+        previous_status = previous_instance.status
+    except sender.DoesNotExist:
+        # If the instance doesn't exist yet, it means this is a new order
+        previous_status = None
+
+    # Check if the status is being updated to 'Placed'
+    if previous_status != 'Placed' and instance.status == 'Placed':
+        # Fetch the payment method and transaction ID
+        payment_method = instance.payment.payment_method if instance.payment else 'Cash on Delivery'
+        transaction_id = instance.payment.transaction_id if instance.payment else None
+
+        # Send confirmation email
+        send_confirmation_email(instance, payment_method, transaction_id)
 
 
 

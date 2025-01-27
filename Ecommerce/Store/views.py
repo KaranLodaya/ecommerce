@@ -13,8 +13,9 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string  # Add this import
 from django.core.mail import send_mail
 from django.conf import settings
-import json, stripe, requests
-from requests import post
+import json 
+# stripe, requests
+# from requests import post
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 
@@ -641,8 +642,8 @@ def payments(request, order_id):
             return handle_cod_payment(request, order_id)
         elif payment_method == 'google_pay':
             return handle_google_pay(request)
-        elif payment_method == 'stripe':  # Stripe UPI payment
-            return create_payment_intent(request, order)
+        # elif payment_method == 'stripe':  # Stripe UPI payment
+        #     return create_payment_intent(request, order)
         else:
             return JsonResponse({'status': 'failure', 'message': 'Invalid payment method'})
 
@@ -707,36 +708,36 @@ def handle_card_payment(request):
 
 # Stripe gateway
 
-stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+# stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
-def create_payment_intent(request, order):
+# def create_payment_intent(request, order):
 
-    if isinstance(order, Order):  # If order is already an Order object
-        order_id = order.id
-    else:
-        order_id = order 
+#     if isinstance(order, Order):  # If order is already an Order object
+#         order_id = order.id
+#     else:
+#         order_id = order 
 
-    order = Order.objects.get(id=order_id)
+#     order = Order.objects.get(id=order_id)
 
-    # Create a Payment Intent for UPI payments
-    try:
-        intent = stripe.PaymentIntent.create(
-            amount=int(order.total * 100),  # Convert to paise
-            currency='inr',
-            payment_method_types=['upi'],
-            metadata={'order_id': order.id}
-        )
+#     # Create a Payment Intent for UPI payments
+#     try:
+#         intent = stripe.PaymentIntent.create(
+#             amount=int(order.total * 100),  # Convert to paise
+#             currency='inr',
+#             payment_method_types=['upi'],
+#             metadata={'order_id': order.id}
+#         )
 
-        order.payment_intent_id = intent.id
-        order.save()
+#         order.payment_intent_id = intent.id
+#         order.save()
 
-        return JsonResponse({
-            'client_secret': intent.client_secret,
-            'public_key': settings.STRIPE_TEST_PUBLIC_KEY
-        })
+#         return JsonResponse({
+#             'client_secret': intent.client_secret,
+#             'public_key': settings.STRIPE_TEST_PUBLIC_KEY
+#         })
 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=400)
 
 # stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
@@ -772,79 +773,79 @@ def create_payment_intent(request, order):
 #         # Return a response to acknowledge receipt of the event
 #         return JsonResponse({'status': 'success'})
     
-def confirm_stripe_payment(request, payment_intent_id):
-    try:
-        # Retrieve the PaymentIntent from Stripe
-        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+# def confirm_stripe_payment(request, payment_intent_id):
+#     try:
+#         # Retrieve the PaymentIntent from Stripe
+#         intent = stripe.PaymentIntent.retrieve(payment_intent_id)
 
-        # Check if the payment was successful
-        if intent.status == 'succeeded':
-            # Update the order and payment status in your database
-            order = Order.objects.get(id=intent.metadata['order_id'])
-            payment = Payment.objects.get(order=order)
-            payment.status = 'completed'
-            payment.transaction_id = intent.id
-            payment.save()
+#         # Check if the payment was successful
+#         if intent.status == 'succeeded':
+#             # Update the order and payment status in your database
+#             order = Order.objects.get(id=intent.metadata['order_id'])
+#             payment = Payment.objects.get(order=order)
+#             payment.status = 'completed'
+#             payment.transaction_id = intent.id
+#             payment.save()
 
-            order.status = 'paid'
-            order.save()
+#             order.status = 'paid'
+#             order.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Payment successful'})
+#             return JsonResponse({'status': 'success', 'message': 'Payment successful'})
 
-        return JsonResponse({'status': 'failure', 'message': 'Payment failed'})
+#         return JsonResponse({'status': 'failure', 'message': 'Payment failed'})
 
-    except stripe.error.StripeError as e:
-        return JsonResponse({'error': str(e)}, status=400)
-
-
+#     except stripe.error.StripeError as e:
+#         return JsonResponse({'error': str(e)}, status=400)
 
 
 
 
 
-# Cashfree Test Environment Credentials
-APP_ID = "TEST10403426ef0c5cc25c97a4e39b9362430401"
-SECRET_KEY = "cfsk_ma_test_23297bcdd05980171c843e3cd0839f82_591219e8"
-API_URL = "https://sandbox.cashfree.com/pg/orders"  # Use 'https://api.cashfree.com/pg/orders' for production
 
-def create_order(order, total):
-    """Create an order via Cashfree's API."""
-    data = {
-        "order_id": order.order_number,  # Unique Order ID
-        "order_amount": total,           # Amount in INR
-        "order_currency": "INR",
-        "customer_details": {
-            "customer_id": order.user.id,
-            "customer_email": order.user.email,
-            "customer_phone": order.user.profile.phone,  # Assuming phone is saved in user profile
-        },
-        "return_url": "http://127.0.0.1:8000/payment-response/",
-    }
 
-    headers = {
-        "Content-Type": "application/json",
-        "x-client-id": APP_ID,
-        "x-client-secret": SECRET_KEY,
-    }
+# # Cashfree Test Environment Credentials
+# APP_ID = "TEST10403426ef0c5cc25c97a4e39b9362430401"
+# SECRET_KEY = "cfsk_ma_test_23297bcdd05980171c843e3cd0839f82_591219e8"
+# API_URL = "https://sandbox.cashfree.com/pg/orders"  # Use 'https://api.cashfree.com/pg/orders' for production
 
-    # Log the data being sent for debugging
-    logging.debug("Cashfree Order Request: %s", json.dumps(data))
+# def create_order(order, total):
+#     """Create an order via Cashfree's API."""
+#     data = {
+#         "order_id": order.order_number,  # Unique Order ID
+#         "order_amount": total,           # Amount in INR
+#         "order_currency": "INR",
+#         "customer_details": {
+#             "customer_id": order.user.id,
+#             "customer_email": order.user.email,
+#             "customer_phone": order.user.profile.phone,  # Assuming phone is saved in user profile
+#         },
+#         "return_url": "http://127.0.0.1:8000/payment-response/",
+#     }
 
-    try:
-        # Make API request to create an order
-        response = requests.post(API_URL, json=data, headers=headers)
-        response_data = response.json()
+#     headers = {
+#         "Content-Type": "application/json",
+#         "x-client-id": APP_ID,
+#         "x-client-secret": SECRET_KEY,
+#     }
 
-        logging.debug("Cashfree Response: %s", json.dumps(response_data))
+#     # Log the data being sent for debugging
+#     logging.debug("Cashfree Order Request: %s", json.dumps(data))
 
-        if response_data.get("payment_link"):
-            return {"payment_link": response_data["payment_link"]}
-        else:
-            return {"error": response_data.get("message", "Failed to create order")}
+#     try:
+#         # Make API request to create an order
+#         response = requests.post(API_URL, json=data, headers=headers)
+#         response_data = response.json()
+
+#         logging.debug("Cashfree Response: %s", json.dumps(response_data))
+
+#         if response_data.get("payment_link"):
+#             return {"payment_link": response_data["payment_link"]}
+#         else:
+#             return {"error": response_data.get("message", "Failed to create order")}
     
-    except requests.exceptions.RequestException as e:
-        logging.error("Error while making Cashfree request: %s", e)
-        return {"error": "Error connecting to Cashfree API"}
+#     except requests.exceptions.RequestException as e:
+#         logging.error("Error while making Cashfree request: %s", e)
+#         return {"error": "Error connecting to Cashfree API"}
 
 
 def payment_response(request):

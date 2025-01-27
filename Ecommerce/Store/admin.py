@@ -35,7 +35,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     # Read-only fields
     readonly_fields = (
-        'order_number', 'user', 'status','shipping_address', 'order_date', 'total', 'shipping', 'subtotal', 'tax',
+        'order_number', 'user','shipping_address', 'order_date', 'total', 'shipping', 'subtotal', 'tax',
         'payment_method', 'transaction_id', 'payment_amount', 'payment_status', 'payment_created_at'
     )
 
