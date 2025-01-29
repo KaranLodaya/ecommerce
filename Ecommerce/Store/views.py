@@ -13,11 +13,9 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string  # Add this import
 from django.core.mail import send_mail
 from django.conf import settings
-import json 
-# stripe, requests
-# from requests import post
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
+import json 
 
 
 
